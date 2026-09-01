@@ -214,12 +214,12 @@ export default function PatientsPage() {
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Age</th>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Contact</th>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Last Visit</th>
-                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Next Follow-up</th>
-                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Score</th>
-                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Level</th>
-                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Follow-up Status</th>
-                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Assigned Staff</th>
-                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Actions</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Next Follow-up</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Score</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Level</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Follow-up Status</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Assigned Staff</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -290,7 +290,7 @@ export default function PatientsPage() {
         </div>
       </div>
 
-      {/* REGISTER NEW PATIENT MODAL FORM WITH VISITS & FREQUENCY GAPS */}
+      {/* REGISTER NEW PATIENT MODAL FORM WITH VISITS COUNT & DAYS/WEEKS GAP */}
       {showRegisterModal && (
         <div className="modal-backdrop">
           <div className="modal-card" style={{ maxWidth: '640px' }}>
@@ -360,15 +360,15 @@ export default function PatientsPage() {
                 </div>
               </div>
 
-              {/* VISITS COUNT & FREQUENCY GAP (NEW FIELDS) */}
+              {/* NUMBER OF APPOINTMENTS & DAYS / WEEKS GAP */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: 'var(--bg-subtle)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-accent)' }}>Number of Planned Visits *</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-accent)' }}>Number of Appointments to be Used *</label>
                   <input
                     type="number"
                     min="1"
                     className="form-control"
-                    placeholder="e.g. 6 visits"
+                    placeholder="e.g. 6 appointments"
                     value={newPatientData.totalAppointments}
                     onChange={(e) => setNewPatientData({ ...newPatientData, totalAppointments: Number(e.target.value) })}
                     required
@@ -376,17 +376,18 @@ export default function PatientsPage() {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-accent)' }}>Visit Frequency Gap (Days) *</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-accent)' }}>Gap Between Appointments (Days / Weeks) *</label>
                   <select
                     className="form-control"
                     value={newPatientData.appointmentFrequencyDays}
                     onChange={(e) => setNewPatientData({ ...newPatientData, appointmentFrequencyDays: Number(e.target.value) })}
                   >
-                    <option value={7}>Every 7 Days (Weekly)</option>
-                    <option value={14}>Every 14 Days (Bi-weekly)</option>
-                    <option value={30}>Every 30 Days (Monthly)</option>
-                    <option value={60}>Every 60 Days (Bi-monthly)</option>
-                    <option value={90}>Every 90 Days (Quarterly)</option>
+                    <option value={7}>7 Days (1 Week)</option>
+                    <option value={14}>14 Days (2 Weeks)</option>
+                    <option value={21}>21 Days (3 Weeks)</option>
+                    <option value={30}>30 Days (1 Month / 4 Weeks)</option>
+                    <option value={60}>60 Days (2 Months / 8 Weeks)</option>
+                    <option value={90}>90 Days (3 Months / 12 Weeks)</option>
                   </select>
                 </div>
               </div>

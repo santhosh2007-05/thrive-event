@@ -28,7 +28,7 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
     if (newRole === 'Admin') targetPath = '/dashboard';
     else if (newRole === 'Doctor') targetPath = '/doctor-dashboard';
     else if (newRole === 'Nurse') targetPath = '/nurse-dashboard';
-    else if (newRole === 'Patient') targetPath = '/patients/P-10234';
+    else if (newRole === 'Patient') targetPath = '/patients/P-1001';
 
     navigate(targetPath);
   };
@@ -174,14 +174,14 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
           </span>
         </button>
 
-        {/* Role Switcher Dropdown Pill */}
+        {/* Role Switcher Dropdown Pill with Explicit Dark Mode Option Text Colors */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', padding: '3px 10px', borderRadius: '30px', flexShrink: 0 }}>
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700 }}>Role:</span>
           <select
             value={currentRole}
             onChange={handleRoleSelect}
             style={{
-              background: 'none',
+              background: 'transparent',
               border: 'none',
               color: 'var(--text-main)',
               fontWeight: 800,
@@ -190,10 +190,10 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
               cursor: 'pointer'
             }}
           >
-            <option value="Admin">Admin</option>
-            <option value="Doctor">Doctor</option>
-            <option value="Nurse">Nurse</option>
-            <option value="Patient">Patient</option>
+            <option value="Admin" style={{ background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#f8fafc' : '#0f172a' }}>Admin</option>
+            <option value="Doctor" style={{ background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#f8fafc' : '#0f172a' }}>Doctor</option>
+            <option value="Nurse" style={{ background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#f8fafc' : '#0f172a' }}>Nurse</option>
+            <option value="Patient" style={{ background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#f8fafc' : '#0f172a' }}>Patient</option>
           </select>
         </div>
 
@@ -204,6 +204,7 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
             position: 'relative',
             background: 'var(--bg-subtle)',
             border: '1px solid var(--border-color)',
+            color: 'var(--text-main)',
             width: '36px',
             height: '36px',
             borderRadius: '50%',
@@ -211,192 +212,98 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            color: 'var(--text-main)',
             flexShrink: 0
           }}
+          title="Open Notifications Drawer"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           {notificationsCount > 0 && (
             <span style={{
               position: 'absolute',
-              top: '1px',
-              right: '1px',
-              background: 'var(--danger-color)',
+              top: '-2px',
+              right: '-2px',
+              background: '#e11d48',
               color: 'white',
-              borderRadius: '50%',
-              width: '16px',
-              height: '16px',
               fontSize: '0.65rem',
               fontWeight: 800,
+              width: '18px',
+              height: '18px',
+              borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              border: '2px solid var(--bg-surface)'
             }}>
               {notificationsCount}
             </span>
           )}
         </button>
 
-        {/* User Avatar Chip + Logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-surface)', border: '1px solid var(--border-color)', padding: '3px 6px 3px 10px', borderRadius: '30px', flexShrink: 0 }}>
+        {/* Logged in User Badge & Logout */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px' }}>
           <div style={{
-            width: '24px',
-            height: '24px',
+            width: '32px',
+            height: '32px',
             borderRadius: '50%',
-            background: 'var(--primary-accent)',
+            background: 'linear-gradient(135deg, #0284c7, #0369a1)',
             color: 'white',
-            fontWeight: 800,
-            fontSize: '0.7rem',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            fontWeight: 800,
+            fontSize: '0.8rem'
           }}>
-            {user?.name ? user.name[0] : 'U'}
+            {user?.name ? user.name.charAt(0) : 'U'}
           </div>
-          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-main)' }}>
-            {user?.name || 'User'}
-          </span>
-
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: '1.1' }}>
+              {user?.name || 'Staff User'}
+            </span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+              {currentRole}
+            </span>
+          </div>
           <button
             onClick={onLogout}
             style={{
-              background: 'var(--danger-soft)',
-              border: '1px solid var(--danger-color)',
-              color: 'var(--danger-color)',
-              padding: '4px 10px',
-              borderRadius: '30px',
-              fontWeight: 700,
-              fontSize: '0.72rem',
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-muted)',
+              fontSize: '0.75rem',
               cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
+              marginLeft: '4px',
+              padding: '4px'
             }}
-            title="Logout"
+            title="Sign out"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
             Logout
           </button>
         </div>
       </div>
 
-      {/* Real-time SMS Dispatcher Modal & Live History */}
-      {showSmsModal && (
-        <div className="modal-backdrop">
-          <div className="modal-card" style={{ maxWidth: '580px' }}>
-            <div className="modal-header">
-              <h3>Dispatch Real-Time SMS — {FORMATTED_PHONE_NUMBER}</h3>
-              <button className="modal-close-btn" onClick={() => setShowSmsModal(false)}>✕</button>
-            </div>
-
-            <form className="modal-form" onSubmit={handleSendSmsSubmit}>
-              <div style={{ background: 'var(--bg-highlight)', padding: '12px', borderRadius: '12px', fontSize: '0.85rem', color: 'var(--primary-accent)', marginBottom: '12px' }}>
-                Target Operational Mobile: <strong>{FORMATTED_PHONE_NUMBER}</strong><br />
-                Gateway Status: <strong style={{ color: 'var(--primary-accent)' }}>Live Cross-Panel Real-Time Sync Active</strong>
-              </div>
-
-              <div className="form-group">
-                <label>Select Patient</label>
-                <select
-                  className="form-control"
-                  value={smsRecipient}
-                  onChange={(e) => setSmsRecipient(e.target.value)}
-                >
-                  {MOCK_PATIENTS.map(p => (
-                    <option key={p.id} value={`${p.name} (${p.id})`}>
-                      {p.name} ({p.id}) — {p.department}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>SMS Message Body</label>
-                <textarea
-                  className="form-control"
-                  rows="3"
-                  placeholder="Enter message text to send to 7598357132..."
-                  value={smsText}
-                  onChange={(e) => setSmsText(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ fontSize: '0.75rem', padding: '6px 12px' }}
-                  onClick={() => setSmsText(`CareTrack Reminder: Hello ${smsRecipient.split(' ')[0]}, your Cardiology follow-up visit is scheduled for 28 Sep 2026 at 10:30 AM with Dr. Ankit Mehta. Please confirm by replying or calling ${FORMATTED_PHONE_NUMBER}.`)}
-                >
-                  + Preset: 24h Reminder
-                </button>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ fontSize: '0.75rem', padding: '6px 12px' }}
-                  onClick={() => setSmsText(`CareTrack Confirmed: Hello ${smsRecipient.split(' ')[0]}, your hospital visit has been successfully CONFIRMED. Contact ${FORMATTED_PHONE_NUMBER} for assistance.`)}
-                >
-                  + Preset: Visit Confirmed
-                </button>
-              </div>
-
-              {/* Live Sent SMS History List */}
-              <div style={{ marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '8px' }}>
-                  Recent Real-Time Sent SMS Log ({sentSmsList.length}):
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '140px', overflowY: 'auto' }}>
-                  {sentSmsList.map(s => (
-                    <div key={s.id} style={{ background: 'var(--bg-subtle)', padding: '8px 12px', borderRadius: '8px', fontSize: '0.78rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-                        <span>To: <strong>{s.to}</strong> ({s.patientName})</span>
-                        <span>{s.timestamp}</span>
-                      </div>
-                      <div style={{ color: 'var(--text-main)', fontWeight: 500, marginTop: '2px' }}>"{s.message}"</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-actions" style={{ marginTop: '16px' }}>
-                <button type="button" className="btn-secondary" onClick={() => setShowSmsModal(false)}>Cancel</button>
-                <button type="submit" className="btn-primary">
-                  Dispatch SMS ({FORMATTED_PHONE_NUMBER})
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Global Search Modal */}
+      {/* Global Patient Search Modal */}
       {showSearchModal && (
-        <div className="modal-backdrop" onClick={() => setShowSearchModal(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
-            <div className="modal-header">
-              <h3>Search Patient Records & Follow-ups</h3>
-              <button className="modal-close-btn" onClick={() => setShowSearchModal(false)}>✕</button>
+        <div className="modal-backdrop">
+          <div className="modal-card" style={{ maxWidth: '520px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontWeight: 800 }}>Search Hospital Patients</h3>
+              <button style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-main)' }} onClick={() => setShowSearchModal(false)}>✕</button>
             </div>
 
             <input
               type="text"
-              className="search-input"
-              placeholder="Type patient name or ID..."
+              className="form-control"
+              placeholder="Type patient name (e.g., Santhosh, Shriakash)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
               style={{ marginBottom: '16px' }}
             />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
+            <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {searchResults.length > 0 ? (
                 searchResults.map(p => (
                   <div
@@ -406,10 +313,9 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
                       navigate(`/patients/${p.id}`);
                     }}
                     style={{
-                      padding: '12px',
-                      borderRadius: '10px',
+                      padding: '10px 14px',
                       background: 'var(--bg-subtle)',
-                      border: '1px solid var(--border-color)',
+                      borderRadius: '10px',
                       cursor: 'pointer',
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -417,18 +323,65 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
                     }}
                   >
                     <div>
-                      <strong style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>{p.name}</strong>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {p.id} • {p.department}</div>
+                      <div style={{ fontWeight: 800, color: 'var(--text-main)' }}>{p.name} ({p.id})</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.department} • Doctor: {p.assignedDoctor}</div>
                     </div>
-                    <span className="status-badge active">{p.risk.riskScore}% Risk</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary-accent)' }}>View Profile &rarr;</span>
                   </div>
                 ))
+              ) : searchQuery ? (
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '16px' }}>No patients found.</div>
               ) : (
-                <div style={{ textAlign: 'center', color: 'var(--text-light)', padding: '20px', fontSize: '0.85rem' }}>
-                  {searchQuery ? 'No matching patient record found.' : 'Type a name or ID to search...'}
-                </div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', padding: '16px' }}>Start typing to search 2,481 patient records...</div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Real-time SMS Dispatch Modal */}
+      {showSmsModal && (
+        <div className="modal-backdrop">
+          <div className="modal-card" style={{ maxWidth: '480px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontWeight: 800 }}>Send Real-Time SMS Alert</h3>
+              <button style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-main)' }} onClick={() => setShowSmsModal(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleSendSmsSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Destination Phone Number (Locked to Target Mobile)</label>
+                <input type="text" className="form-control" value={FORMATTED_PHONE_NUMBER} disabled style={{ background: 'var(--bg-subtle)', fontWeight: 700 }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Select Patient Context</label>
+                <select className="form-control" value={smsRecipient} onChange={(e) => setSmsRecipient(e.target.value)}>
+                  <option value="Santhosh M (P-1001)">Santhosh M (P-1001) - Cardiology</option>
+                  <option value="Shriakash S (P-1002)">Shriakash S (P-1002) - Cardiology</option>
+                  <option value="Prajan Soorya (P-1003)">Prajan Soorya (P-1003) - Orthopedics</option>
+                  <option value="Rahul R (P-1004)">Rahul R (P-1004) - Endocrinology</option>
+                  <option value="Pranesh T (P-1005)">Pranesh T (P-1005) - Dermatology</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>SMS Message Body *</label>
+                <textarea
+                  className="form-control"
+                  rows="4"
+                  placeholder="e.g. CareTrack Alert: Your Cardiology follow-up visit is scheduled for 15 Sep 2026 at 10:30 AM."
+                  value={smsText}
+                  onChange={(e) => setSmsText(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '8px' }}>
+                <button type="button" className="btn-secondary" onClick={() => setShowSmsModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary">Dispatch SMS ({FORMATTED_PHONE_NUMBER})</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
