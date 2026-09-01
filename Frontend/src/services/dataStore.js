@@ -70,6 +70,8 @@ class DataStore {
 
     const nextNumber = 1001 + patients.length;
     const newId = `P-${nextNumber}`;
+    const numVisits = Number(patientData.totalAppointments || 1);
+    const freqDays = Number(patientData.appointmentFrequencyDays || 30);
 
     const newPatientRisk = {
       riskScore: 12,
@@ -101,8 +103,8 @@ class DataStore {
       nextFollowUpDate: '2026-09-15',
       nextFollowUpTime: '10:30 AM',
       missedAppointmentsCount: 0,
-      totalAppointments: 1,
-      appointmentFrequencyDays: 30,
+      totalAppointments: numVisits,
+      appointmentFrequencyDays: freqDays,
       treatmentDurationMonths: 1,
       risk: newPatientRisk,
       history: [
@@ -112,7 +114,7 @@ class DataStore {
           status: 'Completed',
           department: patientData.department || 'Cardiology',
           doctor: patientData.assignedDoctor || 'Dr. Sundaramurthy Iyer',
-          notes: 'First hospital registration and intake completed.'
+          notes: `Intake registration completed. Total planned visits: ${numVisits}, Frequency gap: ${freqDays} days.`
         }
       ]
     };

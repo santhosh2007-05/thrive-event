@@ -22,6 +22,8 @@ export default function PatientsPage() {
     gender: 'Male',
     department: 'Cardiology',
     distanceKm: 5.0,
+    totalAppointments: 6,
+    appointmentFrequencyDays: 30,
     assignedDoctor: 'Dr. Sundaramurthy Iyer',
     assignedNurse: 'Meenakshi Sundaram'
   });
@@ -288,7 +290,7 @@ export default function PatientsPage() {
         </div>
       </div>
 
-      {/* REGISTER NEW PATIENT MODAL FORM WITH PASSWORD */}
+      {/* REGISTER NEW PATIENT MODAL FORM WITH VISITS & FREQUENCY GAPS */}
       {showRegisterModal && (
         <div className="modal-backdrop">
           <div className="modal-card" style={{ maxWidth: '640px' }}>
@@ -355,6 +357,37 @@ export default function PatientsPage() {
                   >
                     {showModalPassword ? '🙈' : '👁️'}
                   </button>
+                </div>
+              </div>
+
+              {/* VISITS COUNT & FREQUENCY GAP (NEW FIELDS) */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: 'var(--bg-subtle)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-accent)' }}>Number of Planned Visits *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="form-control"
+                    placeholder="e.g. 6 visits"
+                    value={newPatientData.totalAppointments}
+                    onChange={(e) => setNewPatientData({ ...newPatientData, totalAppointments: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-accent)' }}>Visit Frequency Gap (Days) *</label>
+                  <select
+                    className="form-control"
+                    value={newPatientData.appointmentFrequencyDays}
+                    onChange={(e) => setNewPatientData({ ...newPatientData, appointmentFrequencyDays: Number(e.target.value) })}
+                  >
+                    <option value={7}>Every 7 Days (Weekly)</option>
+                    <option value={14}>Every 14 Days (Bi-weekly)</option>
+                    <option value={30}>Every 30 Days (Monthly)</option>
+                    <option value={60}>Every 60 Days (Bi-monthly)</option>
+                    <option value={90}>Every 90 Days (Quarterly)</option>
+                  </select>
                 </div>
               </div>
 
