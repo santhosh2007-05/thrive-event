@@ -4,6 +4,7 @@
 class AudioService {
   constructor() {
     this.ctx = null;
+    this.activeOscillators = [];
   }
 
   initContext() {
@@ -15,6 +16,23 @@ class AudioService {
     }
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume();
+    }
+  }
+
+  // Stop any playing emergency alarm siren sound immediately!
+  stopSOSAlarm() {
+    try {
+      this.activeOscillators.forEach(osc => {
+        try {
+          osc.stop();
+          osc.disconnect();
+        } catch (e) {
+          // Already stopped
+        }
+      });
+      this.activeOscillators = [];
+    } catch (err) {
+      console.log('Error stopping SOS alarm:', err);
     }
   }
 
@@ -68,9 +86,10 @@ class AudioService {
     setTimeout(() => this.playTone(220, 'sawtooth', 0.6, 0.4), 200);
   }
 
-  // Extended Medical Emergency Siren Alarm (15 Sweeping Cycles ~10 Seconds)
+  // Extended Medical Emergency Siren Alarm with Cancellation Handle
   playSOSAlarm() {
     try {
+      this.stopSOSAlarm(); // Clear previous active siren
       this.initContext();
       if (!this.ctx) return;
 
@@ -93,6 +112,8 @@ class AudioService {
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
+
+        this.activeOscillators.push(osc);
 
         osc.start(startTime);
         osc.stop(startTime + 0.65);

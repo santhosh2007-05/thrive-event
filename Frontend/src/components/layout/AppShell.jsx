@@ -43,6 +43,13 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
     });
   }, [user]);
 
+  const stopSosEmergency = () => {
+    // Stop medical siren alarm immediately!
+    audioService.stopSOSAlarm();
+    setShowSosModal(false);
+    setSosActiveBanner(false);
+  };
+
   useEffect(() => {
     const handleScreenTap = () => {
       const now = Date.now();
@@ -88,6 +95,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
     else if (type === '10m') audioService.play10mReminder();
     else if (type === 'missed') audioService.playMissedAlert();
     else if (type === 'sos') audioService.playSOSAlarm();
+    else if (type === 'stop_sos') audioService.stopSOSAlarm();
   };
 
   const toggleDarkMode = () => {
@@ -154,10 +162,10 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
                     View Emergency Controls
                   </button>
                   <button
-                    onClick={() => setSosActiveBanner(false)}
+                    onClick={stopSosEmergency}
                     style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '20px', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }}
                   >
-                    Dismiss Banner
+                    Stop SOS & Siren Sound
                   </button>
                 </div>
               </div>
@@ -283,7 +291,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
               </h2>
 
               <p style={{ color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '16px', fontWeight: 600 }}>
-                Rapid emergency gesture detected for <strong>{user?.name || 'Santhosh M'}</strong>! 10-second medical siren alarm activated.
+                Rapid emergency gesture detected for <strong>{user?.name || 'Santhosh M'}</strong>! High-pitch medical siren active.
               </p>
 
               <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#9f1239', padding: '12px', borderRadius: '12px', fontSize: '0.85rem', marginBottom: '20px', fontWeight: 700 }}>
@@ -309,10 +317,10 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
                 <button
                   type="button"
                   className="btn-secondary"
-                  onClick={() => setShowSosModal(false)}
-                  style={{ padding: '10px' }}
+                  onClick={stopSosEmergency}
+                  style={{ padding: '10px', background: '#be123c', color: 'white' }}
                 >
-                  Close Modal (Keep Persistent Top SOS Banner)
+                  Stop SOS & Silence Siren Alarm
                 </button>
               </div>
             </div>
@@ -366,6 +374,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
                 <button onClick={() => handleTestSound('30m')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-surface)', color: 'var(--text-main)', cursor: 'pointer' }}>30m Tone</button>
                 <button onClick={() => handleTestSound('10m')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-surface)', color: 'var(--text-main)', cursor: 'pointer' }}>10m Alert</button>
                 <button onClick={() => handleTestSound('sos')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--danger-color)', background: 'var(--danger-soft)', color: 'var(--danger-color)', cursor: 'pointer' }}>10s SOS Siren</button>
+                <button onClick={() => handleTestSound('stop_sos')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--text-muted)', background: 'var(--bg-highlight)', color: 'var(--text-main)', cursor: 'pointer' }}>Silence Siren</button>
               </div>
             </div>
 
