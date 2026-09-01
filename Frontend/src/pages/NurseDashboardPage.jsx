@@ -26,12 +26,6 @@ export default function NurseDashboardPage() {
     setTimeout(() => setToastMsg(''), 4000);
   };
 
-  const handleInitiatePhoneCall = (p) => {
-    setActiveCallPatient(p);
-    // Directly redirect to phone dialer protocol tel:
-    window.location.href = `tel:${p.phone}`;
-  };
-
   const handleCallSubmit = (e) => {
     e.preventDefault();
     dataStore.updateAppointmentStatus(
@@ -122,12 +116,12 @@ export default function NurseDashboardPage() {
               {highRiskPatients.map(p => (
                 <tr key={p.id}>
                   <td>
-                    <div style={{ fontWeight: 700, color: '#181816' }}>{p.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64665e' }}>ID: {p.id} • {p.phone}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{p.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {p.id} • {p.phone}</div>
                   </td>
                   <td>
                     <div style={{ fontWeight: 600 }}>{p.nextFollowUpDate}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64665e' }}>{p.nextFollowUpTime}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.nextFollowUpTime}</div>
                   </td>
                   <td>
                     <span className="status-badge inactive">{p.risk.riskScore}% HIGH</span>
@@ -172,7 +166,7 @@ export default function NurseDashboardPage() {
             </div>
 
             <form className="modal-form" onSubmit={handleCallSubmit}>
-              <div style={{ background: '#f0f2eb', padding: '12px', borderRadius: '12px', fontSize: '0.85rem', marginBottom: '14px' }}>
+              <div style={{ background: 'var(--bg-subtle)', padding: '12px', borderRadius: '12px', fontSize: '0.85rem', marginBottom: '14px' }}>
                 Phone Number: <strong>{activeCallPatient.phone}</strong><br />
                 Address: <strong>{activeCallPatient.address} ({activeCallPatient.distanceKm} km away)</strong><br />
                 <a href={`tel:${activeCallPatient.phone}`} style={{ color: '#059669', fontWeight: 700, textDecoration: 'underline', marginTop: '6px', display: 'inline-block' }}>

@@ -4,7 +4,6 @@ import dataStore from '../../services/dataStore';
 
 export default function AgeAwarePatientView({ patient, onActionLog }) {
   const [confirmed, setConfirmed] = useState(patient?.status === 'Confirmed');
-  const [showQRModal, setShowQRModal] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
 
   if (!patient) return null;
@@ -26,11 +25,11 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
 
   return (
     <div style={{
-      background: '#ffffff',
-      border: '1px solid #e2e8f0',
+      background: 'var(--bg-surface)',
+      border: '1px solid var(--border-color)',
       borderRadius: '24px',
       padding: '32px',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.06)',
+      boxShadow: 'var(--shadow-soft)',
       maxWidth: '780px',
       margin: '0 auto',
       boxSizing: 'border-box'
@@ -81,8 +80,8 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
 
       {/* 2. Prominent Date & Details Container */}
       <div style={{
-        background: '#f0f7ff',
-        border: '1px solid #c7d2fe',
+        background: 'var(--bg-subtle)',
+        border: '1px solid var(--border-color)',
         borderRadius: '16px',
         padding: '24px',
         textAlign: 'center',
@@ -97,8 +96,8 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
           width: '56px',
           height: '56px',
           borderRadius: '50%',
-          background: '#dbeafe',
-          color: '#2563eb',
+          background: 'var(--info-soft)',
+          color: 'var(--info-color)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -112,43 +111,43 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
           </svg>
         </div>
 
-        <div style={{ fontSize: '2rem', color: '#0f172a', fontWeight: 900, marginBottom: '2px' }}>
+        <div style={{ fontSize: '2rem', color: 'var(--text-main)', fontWeight: 900, marginBottom: '2px' }}>
           {patient.nextFollowUpDate || '05 September 2026'}
         </div>
-        <div style={{ fontSize: '1.4rem', color: '#2563eb', fontWeight: 800, marginBottom: '20px' }}>
+        <div style={{ fontSize: '1.4rem', color: 'var(--info-color)', fontWeight: 800, marginBottom: '20px' }}>
           {patient.nextFollowUpTime || '10:30 AM'}
         </div>
 
         {/* Department & Doctor Row with Icons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid #cbd5e1', paddingTop: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l.77.78L12 20.67l7.65-7.66.77-.78a5.4 5.4 0 0 0 0-7.65z" />
               </svg>
             </div>
             <div style={{ textAlign: 'left' }}>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', display: 'block' }}>DEPARTMENT</span>
-              <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>{patient.department}</strong>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>DEPARTMENT</span>
+              <strong style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>{patient.department}</strong>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
             <div style={{ textAlign: 'left' }}>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', display: 'block' }}>DOCTOR</span>
-              <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>{patient.assignedDoctor}</strong>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>DOCTOR</span>
+              <strong style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>{patient.assignedDoctor}</strong>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Action Buttons with Professional Icons & Chevrons (Matching Uploaded Template) */}
+      {/* 3. Action Buttons with Professional Icons & Chevrons */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {/* GREEN CONFIRM BUTTON */}
         {!confirmed ? (
@@ -184,7 +183,7 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
             </svg>
           </button>
         ) : (
-          <div style={{ background: '#dcfce7', color: '#15803d', padding: '18px', borderRadius: '16px', textAlign: 'center', fontSize: '1.1rem', fontWeight: 800, border: '1px solid #86efac' }}>
+          <div style={{ background: 'var(--accent-soft)', color: 'var(--primary-accent)', padding: '18px', borderRadius: '16px', textAlign: 'center', fontSize: '1.1rem', fontWeight: 800, border: '1px solid var(--border-focus)' }}>
             ✓ YOUR VISIT IS CONFIRMED! WE ARE EXPECTING YOU.
           </div>
         )}
@@ -226,9 +225,9 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
         <button
           onClick={() => alert(`Please call hospital staff at ${patient.phone} to pick a new date.`)}
           style={{
-            background: '#ffffff',
-            color: '#1e293b',
-            border: '1px solid #cbd5e1',
+            background: 'var(--bg-surface)',
+            color: 'var(--text-main)',
+            border: '1px solid var(--border-color)',
             padding: '16px 24px',
             borderRadius: '16px',
             display: 'flex',
@@ -238,7 +237,7 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
@@ -248,10 +247,10 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
             </div>
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontSize: '1rem', fontWeight: 700 }}>CHANGE APPOINTMENT DATE</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Reschedule your appointment</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Reschedule your appointment</div>
             </div>
           </div>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
@@ -261,27 +260,27 @@ export default function AgeAwarePatientView({ patient, onActionLog }) {
       <div style={{
         marginTop: '24px',
         paddingTop: '16px',
-        borderTop: '1px solid #f1f5f9',
+        borderTop: '1px solid var(--border-color)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         fontSize: '0.85rem',
-        color: '#64748b',
+        color: 'var(--text-muted)',
         flexWrap: 'wrap',
         gap: '12px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <span>Assigned Nurse: <strong style={{ color: '#2563eb' }}>{patient.assignedNurse}</strong></span>
+          <span>Assigned Nurse: <strong style={{ color: 'var(--info-color)' }}>{patient.assignedNurse}</strong></span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="1" y="3" width="15" height="13" />
               <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />

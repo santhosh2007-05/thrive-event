@@ -35,7 +35,7 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
 
   const handleSendSmsSubmit = (e) => {
     e.preventDefault();
-    const { smsEntry, nativeSmsUri } = smsService.sendSMS({
+    const { nativeSmsUri } = smsService.sendSMS({
       to: FORMATTED_PHONE_NUMBER,
       patientName: smsRecipient.split(' ')[0],
       customBody: smsText,
@@ -78,7 +78,7 @@ export default function Header({ currentRole, onRoleChange, notificationsCount, 
         <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           HOSPITAL RISK & FOLLOW-UP PLATFORM
         </div>
-        <h2 style={{ margin: '2px 0 0 0', fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.3px', whitespace: 'nowrap' }}>
+        <h2 style={{ margin: '2px 0 0 0', fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.3px', whiteSpace: 'nowrap' }}>
           CareTrack Operations
         </h2>
       </div>

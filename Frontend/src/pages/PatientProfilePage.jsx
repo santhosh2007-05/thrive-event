@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { PATIENTS_WITH_RISK } from '../services/mockDataService';
 import AgeAwarePatientView from '../components/patient/AgeAwarePatientView';
 import audioService from '../services/audioService';
@@ -8,7 +8,6 @@ import { useRole } from '../components/layout/AppShell';
 
 export default function PatientProfilePage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { role } = useRole();
   const [toastMsg, setToastMsg] = useState('');
 
@@ -121,29 +120,29 @@ export default function PatientProfilePage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '0.9rem' }}>
               <div>
-                <span style={{ color: '#64665e', fontSize: '0.8rem', display: 'block' }}>Contact Phone</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>Contact Phone</span>
                 <strong>{patient.phone}</strong>
               </div>
 
               <div>
-                <span style={{ color: '#64665e', fontSize: '0.8rem', display: 'block' }}>SMS Gateway Dispatch</span>
-                <strong style={{ color: '#059669' }}>{FORMATTED_PHONE_NUMBER}</strong>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>SMS Gateway Dispatch</span>
+                <strong style={{ color: 'var(--primary-accent)' }}>{FORMATTED_PHONE_NUMBER}</strong>
               </div>
 
               <div style={{ gridColumn: 'span 2' }}>
-                <span style={{ color: '#64665e', fontSize: '0.8rem', display: 'block' }}>Residential Address & Distance</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>Residential Address & Distance</span>
                 <strong>{patient.address} ({patient.distanceKm} km from hospital)</strong>
               </div>
 
               <div>
-                <span style={{ color: '#64665e', fontSize: '0.8rem', display: 'block' }}>Preferred Channel</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>Preferred Channel</span>
                 <span className="status-badge scheduled">{patient.preferredComm}</span>
               </div>
 
               <div>
-                <span style={{ color: '#64665e', fontSize: '0.8rem', display: 'block' }}>Assigned Care Team</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>Assigned Care Team</span>
                 <strong>{patient.assignedDoctor} (Doctor)</strong><br />
-                <span style={{ fontSize: '0.8rem', color: '#64665e' }}>Nurse: {patient.assignedNurse}</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Nurse: {patient.assignedNurse}</span>
               </div>
             </div>
           </div>
@@ -166,7 +165,7 @@ export default function PatientProfilePage() {
                       {h.status}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#181816' }}>{h.department} • {h.doctor}</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>{h.department} • {h.doctor}</div>
                   <div className="doctor-notes-snippet">{h.notes}</div>
                 </div>
               ))}
@@ -176,17 +175,17 @@ export default function PatientProfilePage() {
 
         {/* Right Column: Follow-up Risk Card & Explainability Breakdown */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="full-width-card" style={{ borderTop: `6px solid ${patient.risk.riskScore >= 70 ? '#e11d48' : '#059669'}` }}>
+          <div className="full-width-card" style={{ borderTop: `6px solid ${patient.risk.riskScore >= 70 ? 'var(--danger-color)' : 'var(--primary-accent)'}` }}>
             <div className="card-header-row">
               <div className="card-section-title">
                 Follow-up Risk Prediction
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#64665e' }}>{patient.risk.modelVersion}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{patient.risk.modelVersion}</span>
             </div>
 
             {/* Risk Score Pill */}
-            <div style={{ textAlign: 'center', padding: '20px', background: '#f0f2eb', borderRadius: '16px', margin: '12px 0' }}>
-              <div style={{ fontSize: '3rem', fontWeight: 900, color: patient.risk.riskScore >= 70 ? '#e11d48' : '#059669' }}>
+            <div style={{ textAlign: 'center', padding: '20px', background: 'var(--bg-subtle)', borderRadius: '16px', margin: '12px 0' }}>
+              <div style={{ fontSize: '3rem', fontWeight: 900, color: patient.risk.riskScore >= 70 ? 'var(--danger-color)' : 'var(--primary-accent)' }}>
                 {patient.risk.riskScore}%
               </div>
               <div className={`status-badge ${patient.risk.riskScore >= 70 ? 'inactive' : 'active'}`} style={{ fontSize: '0.9rem', padding: '6px 16px' }}>
@@ -196,23 +195,23 @@ export default function PatientProfilePage() {
 
             {/* Why this prediction? Transparent Factor Contribution */}
             <div>
-              <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: '#181816', fontWeight: 700 }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--text-main)', fontWeight: 700 }}>
                 Why this prediction?
               </h4>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {patient.risk.factorsSorted.map((factor) => (
-                  <div key={factor.key} style={{ background: '#f0f2eb', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e4e6df' }}>
+                  <div key={factor.key} style={{ background: 'var(--bg-subtle)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>
                       <span>{factor.label} ({factor.raw})</span>
-                      <span style={{ color: factor.points > 10 ? '#e11d48' : '#059669', fontWeight: 700 }}>
+                      <span style={{ color: factor.points > 10 ? 'var(--danger-color)' : 'var(--primary-accent)', fontWeight: 700 }}>
                         +{factor.points} pts
                       </span>
                     </div>
-                    <div style={{ background: '#e4e6df', height: '6px', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ background: 'var(--border-color)', height: '6px', borderRadius: '4px', overflow: 'hidden' }}>
                       <div style={{
                         width: `${(factor.points / factor.maxPoints) * 100}%`,
-                        background: factor.points > 10 ? '#e11d48' : '#059669',
+                        background: factor.points > 10 ? 'var(--danger-color)' : 'var(--primary-accent)',
                         height: '100%'
                       }} />
                     </div>
@@ -222,11 +221,11 @@ export default function PatientProfilePage() {
             </div>
 
             {/* Primary Contributors */}
-            <div style={{ marginTop: '16px', background: '#ecfdf5', padding: '14px', borderRadius: '14px', border: '1px solid #a7f3d0' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#065f46', marginBottom: '4px' }}>
+            <div style={{ marginTop: '16px', background: 'var(--bg-highlight)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-focus)' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-accent)', marginBottom: '4px' }}>
                 Primary Contributing Factors:
               </div>
-              <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#047857' }}>
+              <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: 'var(--primary-accent)' }}>
                 {patient.risk.primaryContributors.map((c, i) => (
                   <li key={i}>{c}</li>
                 ))}
@@ -234,7 +233,7 @@ export default function PatientProfilePage() {
             </div>
 
             {/* Non-fabricated Explanation */}
-            <div style={{ marginTop: '12px', fontSize: '0.85rem', color: '#64665e', fontStyle: 'italic', background: '#f0f2eb', padding: '12px', borderRadius: '10px' }}>
+            <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-subtle)', padding: '12px', borderRadius: '10px' }}>
               "{patient.risk.explanation}"
             </div>
           </div>
@@ -244,7 +243,7 @@ export default function PatientProfilePage() {
       {/* Age-Aware Communication & Patient View Section */}
       {role === 'Patient' && (
         <div style={{ marginTop: '12px' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 16px 0', color: '#181816' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-main)' }}>
             My Patient Portal & Appointment Confirmation
           </h3>
           <AgeAwarePatientView
