@@ -8,7 +8,6 @@ export default function Sidebar({ role }) {
         { label: 'Admin Command Center', path: '/dashboard' },
         { label: 'Patients Management', path: '/patients' },
         { label: 'Risk Predictions Engine', path: '/risk-prediction' },
-        { label: 'ML Model Sandbox', path: '/ml-test' },
         { label: 'Appointments Calendar', path: '/appointments' },
         { label: 'Notifications Center', path: '/notifications' },
         { label: 'Reports & Analytics', path: '/reports' },
@@ -24,7 +23,6 @@ export default function Sidebar({ role }) {
         { label: '360° Doctor Portal', path: '/doctor-dashboard' },
         { label: 'My Patients Caseload', path: '/patients' },
         { label: 'Risk Predictions', path: '/risk-prediction' },
-        { label: 'ML Model Sandbox', path: '/ml-test' },
         { label: 'Appointments Schedule', path: '/appointments' },
         { label: 'Clinical Reports', path: '/reports' },
         { label: 'Settings', path: '/settings' },
@@ -37,7 +35,6 @@ export default function Sidebar({ role }) {
         { label: 'Nurse Intervention Desk', path: '/nurse-dashboard' },
         { label: 'Patients List', path: '/patients' },
         { label: 'Follow-up Risk Alerts', path: '/risk-prediction' },
-        { label: 'ML Model Sandbox', path: '/ml-test' },
         { label: 'Appointments Calendar', path: '/appointments' },
         { label: 'Outreach Notifications', path: '/notifications' },
         { label: 'Settings', path: '/settings' },
@@ -45,9 +42,9 @@ export default function Sidebar({ role }) {
       ];
     }
 
-    // Patient Role
+    // Patient Role (Defaults to Santhosh M P-10238)
     return [
-      { label: 'My Patient Portal', path: '/patients/P-10234' },
+      { label: 'My Patient Portal', path: '/patients/P-10238' },
       { label: 'My Appointments', path: '/appointments' },
       { label: 'My Notifications', path: '/notifications' },
       { label: 'Accessibility Settings', path: '/settings' },
@@ -134,7 +131,7 @@ export default function Sidebar({ role }) {
         ))}
       </nav>
 
-      {/* Sidebar Footer with Colorful Round Logout Button */}
+      {/* Sidebar Footer */}
       <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <button
           onClick={handleLogout}

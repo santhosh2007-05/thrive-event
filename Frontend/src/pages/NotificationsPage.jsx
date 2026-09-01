@@ -1,104 +1,109 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_NOTIFICATIONS, MOCK_PATIENTS } from '../services/mockDataService';
+import { MOCK_NOTIFICATIONS } from '../services/mockDataService';
 import audioService from '../services/audioService';
 import { useRole } from '../components/layout/AppShell';
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
-  const { role } = useRole();
+  const { role, user } = useRole();
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
-  const [categoryFilter, setCategoryFilter] = useState('ALL');
-  const [activeCallModalPatient, setActiveCallModalPatient] = useState(null);
-  const [callOutcome, setCallOutcome] = useState('Answered');
-  const [callNotes, setCallNotes] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
+  const [activeTab, setActiveTab] = useState('ALL');
 
-  // Strict Panel-Specific Notification Scoping
-  const scopedNotifications = notifications.filter(n => {
+  const showSoundToast = (type) => {
+    if (type === '24h') audioService.play24hReminder();
+    else if (type === '2h') audioService.play2hReminder();
+    else if (type === '30m') audioService.play30mReminder();
+    else if (type === '10m') audioService.play10mReminder();
+    else if (type === 'missed') audioService.playMissedAlert();
+  };
+
+  const userName = (user && user.name ? user.name : 'Santhosh M').toLowerCase();
+  const roleFiltered = notifications.filter(n => {
     if (role === 'Patient') {
-      // Patient only sees notifications for own ID (P-10234)
-      return n.patientId === 'P-10234' || n.patientName === 'Ramesh Kumar';
+      return n.patientName.toLowerCase().includes(userName) || n.patientId === 'P-10238' || n.patientId === 'P-10234';
     }
     if (role === 'Doctor') {
-      // Doctor sees clinical alerts and assigned patients (P-10234, P-10235, P-10236, P-10237)
-      return ['P-10234', 'P-10235', 'P-10236', 'P-10237'].includes(n.patientId) || n.category === 'Clinical Alert';
+      return ['P-10234', 'P-10235', 'P-10236', 'P-10237', 'P-10238'].includes(n.patientId) || n.category === 'Clinical Alert';
     }
     if (role === 'Nurse') {
-      // Nurse sees outreach call alerts, missed follow-ups, and reminders
       return n.category === 'High Risk' || n.category === 'Missed Follow-up' || n.category === 'Upcoming';
     }
-    // Admin sees all system notifications
     return true;
   });
 
-  const filteredNotifications = scopedNotifications.filter(n =>
-    categoryFilter === 'ALL' || n.category.toUpperCase() === categoryFilter.toUpperCase()
-  );
+  const finalFiltered = roleFiltered.filter(n => {
+    if (activeTab === 'HIGH_RISK') return n.category === 'High Risk';
+    if (activeTab === 'MISSED') return n.category === 'Missed Follow-up';
+    if (activeTab === 'UPCOMING') return n.category === 'Upcoming';
+    return true;
+  });
 
-  const showToast = (msg) => {
-    setToastMsg(msg);
-    audioService.play2hReminder();
-    setTimeout(() => setToastMsg(''), 4000);
-  };
-
-  const handleCallSubmit = (e) => {
-    e.preventDefault();
-    showToast(`Call outcome '${callOutcome}' logged for ${activeCallModalPatient.name}`);
-    setActiveCallModalPatient(null);
-    setCallNotes('');
+  const handleDismiss = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {toastMsg && (
-        <div style={{ background: '#059669', color: 'white', padding: '12px 20px', borderRadius: '30px', fontWeight: 600 }}>
-          ✓ {toastMsg}
-        </div>
-      )}
+      {/* Header Banner */}
+      <div className="full-width-card" style={{
+        position: 'relative',
+        borderRadius: '20px',
+        overflow: 'hidden',
+        minHeight: '160px',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '32px',
+        color: 'white',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.15)'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: 'linear-gradient(90deg, rgba(24,24,22,0.92) 0%, rgba(24,24,22,0.65) 100%), url(https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          zIndex: 1
+        }} />
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-            {role === 'Patient' ? 'My Portal Reminders & Alerts' : 'Operations Notification Center'}
-          </h2>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            {role === 'Patient' ? 'Real-time appointment reminders and hospital updates' : 'Real-time alerts for missed follow-ups, high-risk flags, and escalations'}
-          </span>
-        </div>
+        <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <div style={{ fontSize: '0.8rem', color: '#a7f3d0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>
+              Hospital Notifications Desk
+            </div>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '4px 0', color: 'white' }}>
+              {role === 'Patient' ? 'My Patient Notifications' : 'Outreach & Risk Alerts Notifications'}
+            </h1>
+            <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>
+              {role === 'Patient' ? `Private alerts for ${user?.name || 'Santhosh M'}` : 'Real-time alert dispatches for high-risk patients and missed follow-ups'}
+            </div>
+          </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            className="btn-secondary"
-            onClick={() => audioService.play10mReminder()}
-          >
-            Test Alert Sound
-          </button>
-          <button
-            className="btn-primary"
-            onClick={() => {
-              setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-              showToast('All notifications marked as read.');
-            }}
-          >
-            Mark All Read
-          </button>
+          <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: '30px', backdropFilter: 'blur(10px)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Audio Alerts:</span>
+            <button onClick={() => showSoundToast('24h')} style={{ background: 'none', border: 'none', color: '#a7f3d0', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>24h</button>
+            <button onClick={() => showSoundToast('2h')} style={{ background: 'none', border: 'none', color: '#a7f3d0', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>2h</button>
+            <button onClick={() => showSoundToast('30m')} style={{ background: 'none', border: 'none', color: '#a7f3d0', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>30m</button>
+            <button onClick={() => showSoundToast('missed')} style={{ background: 'none', border: 'none', color: '#fca5a5', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>Missed</button>
+          </div>
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      {/* Filter Tabs */}
+      <div style={{ display: 'flex', gap: '8px' }}>
         {[
-          { id: 'ALL', label: 'All Alerts' },
-          { id: 'HIGH RISK', label: 'High Risk' },
-          { id: 'MISSED FOLLOW-UP', label: 'Missed Follow-up' },
-          { id: 'UPCOMING', label: 'Upcoming' }
+          { id: 'ALL', label: 'All Notifications' },
+          { id: 'HIGH_RISK', label: 'High Risk Alerts' },
+          { id: 'MISSED', label: 'Missed Follow-ups' },
+          { id: 'UPCOMING', label: 'Upcoming Visits' }
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setCategoryFilter(tab.id)}
-            className={`tab-btn ${categoryFilter === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+            className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
             style={{ padding: '8px 16px', fontSize: '0.85rem' }}
           >
             {tab.label}
@@ -106,140 +111,67 @@ export default function NotificationsPage() {
         ))}
       </div>
 
-      {/* Escalation Hierarchy Card */}
-      {role !== 'Patient' && (
-        <div className="importance-banner" style={{ background: 'var(--bg-highlight)', borderColor: 'var(--border-focus)' }}>
-          <div style={{ fontSize: '0.85rem', color: 'var(--primary-accent)' }}>
-            <strong>Notification Escalation Protocol:</strong> T-24h (Reminder) &rarr; T-2h (Staff Alert) &rarr; T-30m (Two-Tone Alert) &rarr; T-10m (Urgent Alert) &rarr; Appointment Missed &rarr; Escalation to Nurse & Supervisor.
-          </div>
-        </div>
-      )}
-
-      {/* Notifications List */}
+      {/* Notification List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {filteredNotifications.length > 0 ? (
-          filteredNotifications.map((n) => {
-            const patientObj = MOCK_PATIENTS.find(p => p.id === n.patientId) || MOCK_PATIENTS[0];
-            return (
-              <div
-                key={n.id}
-                className="full-width-card"
-                style={{
-                  borderLeft: n.severity === 'danger' ? '6px solid var(--danger-color)' : '6px solid var(--warning-color)',
-                  background: 'var(--bg-surface)'
-                }}
-              >
-                <div className="card-header-row">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span className={`status-badge ${n.severity === 'danger' ? 'inactive' : 'reschedule_requested'}`}>
-                      {n.category}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{n.timestamp}</span>
-                  </div>
-                  <button
-                    onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer' }}
-                  >
-                    ✕
-                  </button>
+        {finalFiltered.length > 0 ? (
+          finalFiltered.map((notif) => (
+            <div
+              key={notif.id}
+              className="full-width-card"
+              style={{
+                borderLeft: notif.severity === 'danger' ? '6px solid var(--danger-color)' : '6px solid var(--warning-color)'
+              }}
+            >
+              <div className="card-header-row">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span className={`status-badge ${notif.severity === 'danger' ? 'inactive' : 'reschedule_requested'}`}>
+                    {notif.category}
+                  </span>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-main)', fontWeight: 700 }}>
+                    {notif.title}
+                  </h3>
                 </div>
 
-                <h3 style={{ margin: '8px 0 4px 0', fontSize: '1.05rem', color: 'var(--text-main)', fontWeight: 700 }}>
-                  {n.title}
-                </h3>
-                <p style={{ margin: '0 0 12px 0', fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                  {n.message}
-                </p>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {notif.timestamp}
+                </div>
+              </div>
 
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {role !== 'Patient' && (
-                    <a
-                      href={`tel:${patientObj.phone}`}
-                      className="btn-primary"
-                      style={{ padding: '6px 14px', fontSize: '0.8rem', textDecoration: 'none' }}
-                      onClick={() => setActiveCallModalPatient(patientObj)}
-                    >
-                      Call Phone ({patientObj.phone})
-                    </a>
-                  )}
+              <p style={{ margin: '12px 0 16px 0', fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                {notif.message}
+              </p>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Patient: <strong style={{ color: 'var(--text-main)' }}>{notif.patientName} ({notif.patientId})</strong>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    className="btn-secondary"
+                    className="btn-primary"
                     style={{ padding: '6px 14px', fontSize: '0.8rem' }}
-                    onClick={() => showToast(`SMS sent to ${n.patientName}`)}
+                    onClick={() => navigate(`/patients/${notif.patientId}`)}
                   >
-                    Send Message
+                    {notif.actionRequired}
                   </button>
+
                   <button
                     className="btn-secondary"
                     style={{ padding: '6px 14px', fontSize: '0.8rem' }}
-                    onClick={() => navigate(`/patients/${n.patientId}`)}
+                    onClick={() => handleDismiss(notif.id)}
                   >
-                    View Details
+                    Dismiss
                   </button>
                 </div>
               </div>
-            );
-          })
+            </div>
+          ))
         ) : (
           <div className="full-width-card" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-            No active notifications for your role panel.
+            No notifications matching this tab.
           </div>
         )}
       </div>
-
-      {/* MODAL: Call Outcome Recording */}
-      {activeCallModalPatient && (
-        <div className="modal-backdrop">
-          <div className="modal-card">
-            <div className="modal-header">
-              <h3>Record Call Outcome — {activeCallModalPatient.name}</h3>
-              <button className="modal-close-btn" onClick={() => setActiveCallModalPatient(null)}>✕</button>
-            </div>
-
-            <form className="modal-form" onSubmit={handleCallSubmit}>
-              <div style={{ background: 'var(--bg-subtle)', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                Calling Phone: <strong>{activeCallModalPatient.phone}</strong><br />
-                Patient ID: <strong>{activeCallModalPatient.id}</strong><br />
-                <a href={`tel:${activeCallModalPatient.phone}`} style={{ color: 'var(--primary-accent)', fontWeight: 700, textDecoration: 'underline', marginTop: '6px', display: 'inline-block' }}>
-                  Click to Redial ({activeCallModalPatient.phone})
-                </a>
-              </div>
-
-              <div className="form-group">
-                <label>Call Outcome *</label>
-                <select
-                  className="form-control"
-                  value={callOutcome}
-                  onChange={(e) => setCallOutcome(e.target.value)}
-                >
-                  <option value="Answered">[Answered] — Patient confirmed visit</option>
-                  <option value="No Answer">[No Answer] — Left voicemail</option>
-                  <option value="Wrong Number">[Wrong Number]</option>
-                  <option value="Requested Reschedule">[Requested Reschedule]</option>
-                  <option value="Patient Will Call Back">[Patient Will Call Back]</option>
-                  <option value="Other">[Other]</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Intervention Notes</label>
-                <textarea
-                  className="form-control"
-                  rows="3"
-                  placeholder="Record outcome details..."
-                  value={callNotes}
-                  onChange={(e) => setCallNotes(e.target.value)}
-                />
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn-secondary" onClick={() => setActiveCallModalPatient(null)}>Cancel</button>
-                <button type="submit" className="btn-primary">Save Call Outcome</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

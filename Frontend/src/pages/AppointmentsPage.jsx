@@ -5,7 +5,7 @@ import { useRole } from '../components/layout/AppShell';
 
 export default function AppointmentsPage() {
   const navigate = useNavigate();
-  const { role } = useRole();
+  const { role, user } = useRole();
   const [appointments, setAppointments] = useState(dataStore.getAppointments());
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'calendar'
   const [activeFilter, setActiveFilter] = useState('ALL');
@@ -17,9 +17,14 @@ export default function AppointmentsPage() {
     return () => unsubscribe();
   }, []);
 
-  // Strict Data Isolation: If logged in as Patient, filter to ONLY own appointments (P-10234)
+  // Strict Data Scoping: If logged in as Patient, filter to ONLY own appointments
+  const userName = (user && user.name ? user.name : 'Santhosh M').toLowerCase();
   const scopedAppointments = role === 'Patient'
-    ? appointments.filter(a => a.patientId === 'P-10234' || a.patientName === 'Ramesh Kumar')
+    ? appointments.filter(a =>
+        a.patientName.toLowerCase().includes(userName) ||
+        a.patientId === 'P-10238' ||
+        a.patientId === 'P-10234'
+      )
     : appointments;
 
   const filteredAppointments = scopedAppointments.filter(apt => {
@@ -62,10 +67,10 @@ export default function AppointmentsPage() {
               Hospital Schedule Management
             </div>
             <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '4px 0', color: 'white' }}>
-              {role === 'Patient' ? 'My Appointments & Follow-up Calendar' : 'Appointments & Follow-up Calendar'}
+              {role === 'Patient' ? 'My Personal Appointments & Calendar' : 'Appointments & Follow-up Calendar'}
             </h1>
             <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>
-              {role === 'Patient' ? 'View and confirm your upcoming hospital follow-up visits' : 'Schedule, confirm, and track patient follow-up visits'}
+              {role === 'Patient' ? `Viewing private follow-up schedule for ${user?.name || 'Santhosh M'}` : 'Schedule, confirm, and track patient follow-up visits'}
             </div>
           </div>
 
@@ -198,7 +203,7 @@ export default function AppointmentsPage() {
                 ) : (
                   <tr>
                     <td colSpan="8" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
-                      No appointments found matching filter.
+                      No appointments found matching your account.
                     </td>
                   </tr>
                 )}

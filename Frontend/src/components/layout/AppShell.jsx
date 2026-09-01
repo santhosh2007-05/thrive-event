@@ -5,7 +5,7 @@ import Footer from './Footer';
 import { MOCK_NOTIFICATIONS } from '../../services/mockDataService';
 import audioService from '../../services/audioService';
 
-export const RoleContext = createContext({ role: 'Admin' });
+export const RoleContext = createContext({ role: 'Admin', user: { name: 'Operational Staff', role: 'Admin' } });
 export const useRole = () => useContext(RoleContext);
 
 export default function AppShell({ children, role, onRoleChange, user, onLogout }) {
@@ -20,10 +20,11 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
   // Panel-Specific Notification Drawer Filtering
   const roleNotifications = notificationsList.filter(n => {
     if (role === 'Patient') {
-      return n.patientId === 'P-10234' || n.patientName === 'Ramesh Kumar';
+      const uName = (user && user.name ? user.name : 'Santhosh M').toLowerCase();
+      return n.patientName.toLowerCase().includes(uName) || n.patientId === 'P-10238' || n.patientId === 'P-10234';
     }
     if (role === 'Doctor') {
-      return ['P-10234', 'P-10235', 'P-10236', 'P-10237'].includes(n.patientId) || n.category === 'Clinical Alert';
+      return ['P-10234', 'P-10235', 'P-10236', 'P-10237', 'P-10238'].includes(n.patientId) || n.category === 'Clinical Alert';
     }
     if (role === 'Nurse') {
       return n.category === 'High Risk' || n.category === 'Missed Follow-up' || n.category === 'Upcoming';
@@ -50,7 +51,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
   };
 
   return (
-    <RoleContext.Provider value={{ role }}>
+    <RoleContext.Provider value={{ role, user }}>
       <div className={`app-shell-root ${darkMode ? 'dark-mode' : ''} ${accessibilityMode.highContrast ? 'high-contrast-mode' : ''}`} style={{
         display: 'flex',
         minHeight: '100vh',
@@ -62,7 +63,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
         {/* Fixed Sidebar for ALL Roles */}
         <Sidebar role={role} />
 
-        {/* Main Content Area (marginLeft: 240px unconditionally for ALL roles) */}
+        {/* Main Content Area */}
         <div style={{
           flex: 1,
           marginLeft: '240px',
@@ -84,7 +85,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
               onToggleDarkMode={toggleDarkMode}
             />
 
-            {/* Quick Accessibility Banner Toggle */}
+            {/* Quick Accessibility Controls */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -169,7 +170,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
               </button>
             </div>
 
-            {/* Audio Test Bar inside drawer */}
+            {/* Audio Test Bar */}
             <div style={{ background: 'var(--bg-subtle)', padding: '10px 16px', borderBottom: '1px solid var(--border-color)', fontSize: '0.75rem' }}>
               <div style={{ fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Test Audio Operations Tones:</div>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>

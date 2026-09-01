@@ -13,15 +13,17 @@ export default function PatientsPage() {
 
   // Register New Patient Modal State
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showModalPassword, setShowModalPassword] = useState(false);
   const [newPatientData, setNewPatientData] = useState({
     name: '',
+    phone: '+91 7598357132',
+    password: '',
     age: 30,
     gender: 'Male',
-    phone: '',
     department: 'Cardiology',
     distanceKm: 5.0,
-    assignedDoctor: 'Dr. Ankit Mehta',
-    assignedNurse: 'Priya Sharma'
+    assignedDoctor: 'Dr. Sundaramurthy Iyer',
+    assignedNurse: 'Meenakshi Sundaram'
   });
   const [toastMsg, setToastMsg] = useState('');
 
@@ -239,8 +241,8 @@ export default function PatientsPage() {
                       </span>
                     </td>
                     <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      Dr. {patient.assignedDoctor ? patient.assignedDoctor.replace('Dr. ', '') : 'Ankit Mehta'}<br />
-                      Nurse: {patient.assignedNurse || 'Priya Sharma'}
+                      {patient.assignedDoctor ? patient.assignedDoctor : 'Dr. Sundaramurthy Iyer'}<br />
+                      Nurse: {patient.assignedNurse || 'Meenakshi Sundaram'}
                     </td>
                     <td>
                       <div className="action-buttons-group">
@@ -267,10 +269,10 @@ export default function PatientsPage() {
         </div>
       </div>
 
-      {/* REGISTER NEW PATIENT MODAL FORM */}
+      {/* REGISTER NEW PATIENT MODAL FORM WITH PASSWORD */}
       {showRegisterModal && (
         <div className="modal-backdrop">
-          <div className="modal-card" style={{ maxWidth: '600px' }}>
+          <div className="modal-card" style={{ maxWidth: '640px' }}>
             <div className="modal-header">
               <h3>New Patient Intake Registration</h3>
               <button className="modal-close-btn" onClick={() => setShowRegisterModal(false)}>✕</button>
@@ -295,11 +297,45 @@ export default function PatientsPage() {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="+91 98765 43210"
+                    placeholder="+91 7598357132"
                     value={newPatientData.phone}
                     onChange={(e) => setNewPatientData({ ...newPatientData, phone: e.target.value })}
                     required
                   />
+                </div>
+              </div>
+
+              {/* Password Integration for New Patient */}
+              <div className="form-group" style={{ position: 'relative' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Patient Portal Account Password *</label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type={showModalPassword ? 'text' : 'password'}
+                    className="form-control"
+                    placeholder="Set account password (e.g. 123456)"
+                    value={newPatientData.password}
+                    onChange={(e) => setNewPatientData({ ...newPatientData, password: e.target.value })}
+                    required
+                    style={{ paddingRight: '44px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowModalPassword(!showModalPassword);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-main)',
+                      cursor: 'pointer',
+                      zIndex: 10
+                    }}
+                  >
+                    {showModalPassword ? '🙈' : '👁️'}
+                  </button>
                 </div>
               </div>
 
@@ -363,16 +399,12 @@ export default function PatientsPage() {
                     value={newPatientData.assignedDoctor}
                     onChange={(e) => setNewPatientData({ ...newPatientData, assignedDoctor: e.target.value })}
                   >
-                    <option value="Dr. Ankit Mehta">Dr. Ankit Mehta (Cardiology)</option>
-                    <option value="Dr. Sunita Rao">Dr. Sunita Rao (Orthopedics)</option>
-                    <option value="Dr. Rajesh Verma">Dr. Rajesh Verma (Endocrinology)</option>
-                    <option value="Dr. Meera Kapoor">Dr. Meera Kapoor (Dermatology)</option>
+                    <option value="Dr. Sundaramurthy Iyer">Dr. Sundaramurthy Iyer (Cardiology)</option>
+                    <option value="Dr. Venkatesh Ramanathan">Dr. Venkatesh Ramanathan (Orthopedics)</option>
+                    <option value="Dr. Subramanian Natarajan">Dr. Subramanian Natarajan (Endocrinology)</option>
+                    <option value="Dr. Kausalya Krishnaswamy">Dr. Kausalya Krishnaswamy (Dermatology)</option>
                   </select>
                 </div>
-              </div>
-
-              <div style={{ background: 'var(--bg-highlight)', border: '1px solid var(--border-focus)', padding: '12px 14px', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--primary-accent)' }}>
-                ℹ️ <strong>Clean Intake Baseline:</strong> New patients start with a clean attendance record (0 past missed visits) and <strong>no initial risk penalty</strong>.
               </div>
 
               <div className="form-actions" style={{ marginTop: '14px' }}>

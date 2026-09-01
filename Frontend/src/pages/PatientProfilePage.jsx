@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { PATIENTS_WITH_RISK } from '../services/mockDataService';
+import dataStore from '../services/dataStore';
 import AgeAwarePatientView from '../components/patient/AgeAwarePatientView';
 import audioService from '../services/audioService';
 import smsService, { FORMATTED_PHONE_NUMBER } from '../services/smsService';
@@ -9,11 +9,19 @@ import { useRole } from '../components/layout/AppShell';
 export default function PatientProfilePage() {
   const { id } = useParams();
   const { role } = useRole();
+  const [patients, setPatients] = useState(dataStore.getPatients());
   const [toastMsg, setToastMsg] = useState('');
 
-  // Unrestricted Data Access: If logged in as Patient, view own profile (P-10234), otherwise view requested ID
-  const targetId = role === 'Patient' ? 'P-10234' : id;
-  const patient = PATIENTS_WITH_RISK.find(p => p.id === targetId) || PATIENTS_WITH_RISK[0];
+  useEffect(() => {
+    const unsubscribe = dataStore.subscribe(() => {
+      setPatients(dataStore.getPatients());
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Determine target patient: if ID is provided, use that ID. If Patient role, default to P-10238 (Santhosh M) or P-10234
+  const targetId = id || (role === 'Patient' ? 'P-10238' : 'P-10234');
+  const patient = patients.find(p => p.id === targetId) || patients[0];
 
   const showToast = (msg) => {
     setToastMsg(msg);
@@ -146,7 +154,7 @@ export default function PatientProfilePage() {
             </div>
           </div>
 
-          {/* Appointment Attendance Timeline (Bulletproof Inline Flex Card Styling) */}
+          {/* Appointment Attendance Timeline */}
           <div className="full-width-card">
             <div className="card-header-row" style={{ marginBottom: '20px' }}>
               <div className="card-section-title">
@@ -156,135 +164,131 @@ export default function PatientProfilePage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {patient.history.map((h) => {
-                const isCompleted = h.status === 'Completed';
-                const isMissed = h.status === 'Missed';
-                const statusColor = isCompleted ? '#059669' : isMissed ? '#e11d48' : '#d97706';
-                const statusBg = isCompleted ? 'var(--accent-soft)' : isMissed ? 'var(--danger-soft)' : 'var(--warning-soft)';
+              {patient.history && patient.history.length > 0 ? (
+                patient.history.map((h) => {
+                  const isCompleted = h.status === 'Completed';
+                  const isMissed = h.status === 'Missed';
+                  const statusColor = isCompleted ? '#059669' : isMissed ? '#e11d48' : '#d97706';
+                  const statusBg = isCompleted ? 'var(--accent-soft)' : isMissed ? 'var(--danger-soft)' : 'var(--warning-soft)';
 
-                return (
-                  <div
-                    key={h.id}
-                    style={{
-                      background: 'var(--bg-subtle)',
-                      border: '1px solid var(--border-color)',
-                      borderLeft: `5px solid ${statusColor}`,
-                      borderRadius: '14px',
-                      padding: '16px 20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                        🗓️ {h.date}
+                  return (
+                    <div
+                      key={h.id}
+                      style={{
+                        background: 'var(--bg-subtle)',
+                        border: '1px solid var(--border-color)',
+                        borderLeft: `5px solid ${statusColor}`,
+                        borderRadius: '14px',
+                        padding: '16px 20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                          🗓️ {h.date}
+                        </div>
+                        <span
+                          style={{
+                            background: statusBg,
+                            color: statusColor,
+                            padding: '4px 12px',
+                            borderRadius: '30px',
+                            fontSize: '0.75rem',
+                            fontWeight: 800,
+                            letterSpacing: '0.3px'
+                          }}
+                        >
+                          {h.status}
+                        </span>
                       </div>
-                      <span
-                        style={{
-                          background: statusBg,
-                          color: statusColor,
-                          padding: '4px 12px',
-                          borderRadius: '30px',
-                          fontSize: '0.75rem',
-                          fontWeight: 800,
-                          letterSpacing: '0.3px'
-                        }}
-                      >
-                        {h.status}
-                      </span>
-                    </div>
 
-                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                      {h.department} • {h.doctor}
-                    </div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                        {h.department} • {h.doctor}
+                      </div>
 
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                      "{h.notes}"
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                        "{h.notes}"
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>First time patient intake. No previous history.</div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Right Column: Follow-up Risk Card & Explainability Breakdown */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="full-width-card" style={{ borderTop: `6px solid ${patient.risk.riskScore >= 70 ? 'var(--danger-color)' : 'var(--primary-accent)'}` }}>
+          <div className="full-width-card" style={{ borderTop: `6px solid ${patient.risk && patient.risk.riskScore >= 70 ? 'var(--danger-color)' : 'var(--primary-accent)'}` }}>
             <div className="card-header-row">
               <div className="card-section-title">
                 Follow-up Risk Prediction
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{patient.risk.modelVersion}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{patient.risk ? patient.risk.modelVersion : 'v2.1'}</span>
             </div>
 
             {/* Risk Score Pill */}
             <div style={{ textAlign: 'center', padding: '20px', background: 'var(--bg-subtle)', borderRadius: '16px', margin: '12px 0' }}>
-              <div style={{ fontSize: '3rem', fontWeight: 900, color: patient.risk.riskScore >= 70 ? 'var(--danger-color)' : 'var(--primary-accent)' }}>
-                {patient.risk.riskScore}%
+              <div style={{ fontSize: '3rem', fontWeight: 900, color: patient.risk && patient.risk.riskScore >= 70 ? 'var(--danger-color)' : 'var(--primary-accent)' }}>
+                {patient.risk ? patient.risk.riskScore : 12}%
               </div>
-              <div className={`status-badge ${patient.risk.riskScore >= 70 ? 'inactive' : 'active'}`} style={{ fontSize: '0.9rem', padding: '6px 16px' }}>
-                {patient.risk.riskLevel} RISK
+              <div className={`status-badge ${patient.risk && patient.risk.riskScore >= 70 ? 'inactive' : 'active'}`} style={{ fontSize: '0.9rem', padding: '6px 16px' }}>
+                {patient.risk ? patient.risk.riskLevel : 'LOW'} RISK
               </div>
             </div>
 
-            {/* Why this prediction? Transparent Factor Contribution */}
+            {/* Why this prediction? */}
             <div>
               <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--text-main)', fontWeight: 700 }}>
                 Why this prediction?
               </h4>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {patient.risk.factorsSorted.map((factor) => (
-                  <div key={factor.key} style={{ background: 'var(--bg-subtle)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>
-                      <span>{factor.label} ({factor.raw})</span>
-                      <span style={{ color: factor.points > 10 ? 'var(--danger-color)' : 'var(--primary-accent)', fontWeight: 700 }}>
-                        +{factor.points} pts
-                      </span>
+                {patient.risk && patient.risk.factorsSorted ? (
+                  patient.risk.factorsSorted.map((factor) => (
+                    <div key={factor.key} style={{ background: 'var(--bg-subtle)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>
+                        <span>{factor.label} ({factor.raw})</span>
+                        <span style={{ color: factor.points > 10 ? 'var(--danger-color)' : 'var(--primary-accent)', fontWeight: 700 }}>
+                          +{factor.points} pts
+                        </span>
+                      </div>
+                      <div style={{ background: 'var(--border-color)', height: '6px', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{
+                          width: `${(factor.points / factor.maxPoints) * 100}%`,
+                          background: factor.points > 10 ? 'var(--danger-color)' : 'var(--primary-accent)',
+                          height: '100%'
+                        }} />
+                      </div>
                     </div>
-                    <div style={{ background: 'var(--border-color)', height: '6px', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{
-                        width: `${(factor.points / factor.maxPoints) * 100}%`,
-                        background: factor.points > 10 ? 'var(--danger-color)' : 'var(--primary-accent)',
-                        height: '100%'
-                      }} />
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>First time intake baseline.</div>
+                )}
               </div>
-            </div>
-
-            {/* Primary Contributors */}
-            <div style={{ marginTop: '16px', background: 'var(--bg-highlight)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-focus)' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-accent)', marginBottom: '4px' }}>
-                Primary Contributing Factors:
-              </div>
-              <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: 'var(--primary-accent)' }}>
-                {patient.risk.primaryContributors.map((c, i) => (
-                  <li key={i}>{c}</li>
-                ))}
-              </ol>
             </div>
 
             {/* Non-fabricated Explanation */}
             <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-subtle)', padding: '12px', borderRadius: '10px' }}>
-              "{patient.risk.explanation}"
+              "{patient.risk ? patient.risk.explanation : 'New patient intake.'}"
             </div>
           </div>
         </div>
       </div>
 
-      {/* Age-Aware Communication & Patient View Section */}
+      {/* Age-Aware Communication & Patient Portal Card */}
       {role === 'Patient' && (
         <div style={{ marginTop: '12px' }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-main)' }}>
-            My Patient Portal & Appointment Confirmation
+            My Patient Portal & Appointment Confirmation ({patient.name})
           </h3>
           <AgeAwarePatientView
             patient={patient}
-            onActionLog={(action, pId, oldVal, newVal, reason) => {
+            onActionLog={(action) => {
               showToast(`Logged to Audit Trail: ${action}`);
             }}
           />

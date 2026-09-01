@@ -4,9 +4,9 @@
 import { PATIENTS_WITH_RISK, MOCK_APPOINTMENTS, MOCK_AUDIT_LOGS } from './mockDataService';
 
 const STORAGE_KEYS = {
-  PATIENTS: 'caretrack_patients',
-  APPOINTMENTS: 'caretrack_appointments',
-  AUDIT_LOGS: 'caretrack_audit_logs'
+  PATIENTS: 'caretrack_patients_v2',
+  APPOINTMENTS: 'caretrack_appointments_v2',
+  AUDIT_LOGS: 'caretrack_audit_logs_v2'
 };
 
 class DataStore {
@@ -62,15 +62,15 @@ class DataStore {
     }
   }
 
-  // Real-time Action: Register New Patient (Clean New Intake - No Risk Consequences)
+  // Real-time Action: Register New Patient (Unique ID Generator: P-1007, P-1008, etc.)
   registerNewPatient(patientData, actorName = 'Admin', role = 'Admin') {
     const patients = this.getPatients();
     const appointments = this.getAppointments();
     const logs = this.getAuditLogs();
 
-    const newId = `P-${10234 + patients.length}`;
+    const nextNumber = 1001 + patients.length;
+    const newId = `P-${nextNumber}`;
 
-    // Clean New Patient Baseline (No Risk Penalty / Consequences)
     const newPatientRisk = {
       riskScore: 12,
       riskLevel: 'LOW',
@@ -89,12 +89,12 @@ class DataStore {
       name: patientData.name || 'New Patient',
       age: Number(patientData.age || 30),
       gender: patientData.gender || 'Male',
-      phone: patientData.phone || '+91 98765 43210',
-      address: patientData.address || 'Local City Center',
+      phone: patientData.phone || '+91 7598357132',
+      address: patientData.address || 'Chennai Medical District',
       distanceKm: Number(patientData.distanceKm || 5),
       department: patientData.department || 'Cardiology',
-      assignedDoctor: patientData.assignedDoctor || 'Dr. Ankit Mehta',
-      assignedNurse: patientData.assignedNurse || 'Priya Sharma',
+      assignedDoctor: patientData.assignedDoctor || 'Dr. Sundaramurthy Iyer',
+      assignedNurse: patientData.assignedNurse || 'Meenakshi Sundaram',
       status: 'Upcoming',
       preferredComm: 'Phone',
       lastVisitDate: 'N/A (First Intake)',
@@ -111,7 +111,7 @@ class DataStore {
           date: new Date().toISOString().split('T')[0],
           status: 'Completed',
           department: patientData.department || 'Cardiology',
-          doctor: patientData.assignedDoctor || 'Dr. Ankit Mehta',
+          doctor: patientData.assignedDoctor || 'Dr. Sundaramurthy Iyer',
           notes: 'First hospital registration and intake completed.'
         }
       ]
@@ -119,7 +119,6 @@ class DataStore {
 
     const updatedPatients = [newPatientObj, ...patients];
 
-    // Create initial appointment record for the new patient
     const newAptObj = {
       id: `APT-${newId}`,
       patientId: newId,
@@ -137,7 +136,6 @@ class DataStore {
 
     const updatedAppointments = [newAptObj, ...appointments];
 
-    // Append Audit Log with exact timestamp
     const exactTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newLog = {
       id: `AUD-${Date.now()}`,
@@ -222,7 +220,7 @@ class DataStore {
 
     const exactTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let previousStatus = 'Pending';
-    let targetPatientId = 'P-10234';
+    let targetPatientId = 'P-1001';
 
     const updatedAppointments = appointments.map(apt => {
       if (apt.id === appointmentId) {

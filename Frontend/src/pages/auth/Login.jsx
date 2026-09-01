@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import audioService from '../../services/audioService';
+import dataStore from '../../services/dataStore';
 
 const CAROUSEL_SLIDES = [
   {
@@ -22,9 +23,9 @@ const CAROUSEL_SLIDES = [
 
 export default function Login({ onLoginSuccess }) {
   const navigate = useNavigate();
-  const [role, setRole] = useState('Admin');
-  const [email, setEmail] = useState('admin@caretrack.health');
-  const [password, setPassword] = useState('••••••••');
+  const [role, setRole] = useState('Patient');
+  const [email, setEmail] = useState('santhosh');
+  const [password, setPassword] = useState('123456');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -40,13 +41,22 @@ export default function Login({ onLoginSuccess }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     audioService.play2hReminder();
-    onLoginSuccess({ name: email, role });
 
-    // Navigate to role-specific portal
+    const allPatients = dataStore.getPatients();
+    const query = email.toLowerCase().trim();
+
+    // Match patient by name or ID
+    const matchedPatient = allPatients.find(p =>
+      p.name.toLowerCase().includes(query) ||
+      p.id.toLowerCase() === query
+    ) || allPatients.find(p => p.id === 'P-10238') || allPatients[0];
+
+    onLoginSuccess({ name: matchedPatient ? matchedPatient.name : email, role });
+
     if (role === 'Admin') navigate('/dashboard');
     else if (role === 'Doctor') navigate('/doctor-dashboard');
     else if (role === 'Nurse') navigate('/nurse-dashboard');
-    else navigate('/patients/P-10234');
+    else navigate(`/patients/${matchedPatient.id}`);
   };
 
   const currentSlide = CAROUSEL_SLIDES[activeSlide];
@@ -80,7 +90,7 @@ export default function Login({ onLoginSuccess }) {
         overflow: 'hidden',
         position: 'relative'
       }}>
-        {/* Top-Right Theme Toggle Button & Test ML Sandbox Link */}
+        {/* Top-Right Buttons */}
         <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 10, display: 'flex', gap: '8px' }}>
           <Link
             to="/ml-test"
@@ -132,7 +142,6 @@ export default function Login({ onLoginSuccess }) {
           minHeight: '480px',
           overflow: 'hidden'
         }}>
-          {/* Background Image Carousel Layer with Crossfade */}
           <div style={{
             position: 'absolute',
             top: 0,
@@ -146,7 +155,6 @@ export default function Login({ onLoginSuccess }) {
             zIndex: 1
           }} />
 
-          {/* Top Logo Layer */}
           <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
@@ -169,7 +177,6 @@ export default function Login({ onLoginSuccess }) {
             </div>
           </div>
 
-          {/* Bottom Hero Text Layer */}
           <div style={{ position: 'relative', zIndex: 2, marginTop: 'auto', paddingTop: '60px' }}>
             <h1 style={{
               color: 'white',
@@ -185,7 +192,6 @@ export default function Login({ onLoginSuccess }) {
               {currentSlide.subtitle}
             </p>
 
-            {/* Carousel Slide Indicators */}
             <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>
               {CAROUSEL_SLIDES.map((_, idx) => (
                 <div
@@ -244,21 +250,21 @@ export default function Login({ onLoginSuccess }) {
                   boxSizing: 'border-box'
                 }}
               >
+                <option value="Patient">Patient Portal (e.g. Santhosh)</option>
                 <option value="Admin">System Administrator</option>
                 <option value="Doctor">Attending Doctor</option>
                 <option value="Nurse">Staff Nurse</option>
-                <option value="Patient">Patient Portal</option>
               </select>
             </div>
 
-            {/* Email / Username */}
+            {/* Email / Username / Patient Name */}
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', color: isLightTheme ? '#64665e' : '#cbd5e1', marginBottom: '6px', fontWeight: 500 }}>
-                Email or Username
+                Patient Name, Email or ID
               </label>
               <input
                 type="text"
-                placeholder="Enter your email or username"
+                placeholder="e.g. santhosh or P-10238"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -276,12 +282,12 @@ export default function Login({ onLoginSuccess }) {
               />
             </div>
 
-            {/* Password with Eye Icon */}
+            {/* Password with Working Eye Toggle Button */}
             <div style={{ position: 'relative' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', color: isLightTheme ? '#64665e' : '#cbd5e1', marginBottom: '6px', fontWeight: 500 }}>
                 Password
               </label>
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
@@ -302,23 +308,37 @@ export default function Login({ onLoginSuccess }) {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowPassword(!showPassword);
+                  }}
                   style={{
                     position: 'absolute',
-                    right: '14px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
+                    right: '12px',
+                    background: 'transparent',
                     border: 'none',
-                    color: isLightTheme ? '#64665e' : '#94a3b8',
+                    color: isLightTheme ? '#181816' : '#ffffff',
                     cursor: 'pointer',
-                    padding: 0
+                    padding: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 10
                   }}
+                  title={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
+                  {showPassword ? (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
@@ -353,7 +373,7 @@ export default function Login({ onLoginSuccess }) {
                 boxShadow: '0 4px 15px rgba(5, 150, 105, 0.3)'
               }}
             >
-              Sign in to CareTrack
+              Sign in as Patient ({email || 'Santhosh'})
             </button>
           </form>
         </div>
