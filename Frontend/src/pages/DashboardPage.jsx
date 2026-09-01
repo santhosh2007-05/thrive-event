@@ -5,12 +5,10 @@ import dataStore from '../services/dataStore';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [patients, setPatients] = useState(dataStore.getPatients());
-  const [appointments, setAppointments] = useState(dataStore.getAppointments());
 
   useEffect(() => {
     const unsubscribe = dataStore.subscribe(() => {
       setPatients(dataStore.getPatients());
-      setAppointments(dataStore.getAppointments());
     });
     return () => unsubscribe();
   }, []);

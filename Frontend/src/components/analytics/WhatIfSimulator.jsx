@@ -46,11 +46,27 @@ export default function WhatIfSimulator({ initialPatient = null }) {
       </div>
 
       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 20px 0', lineHeight: '1.5' }}>
-        Experiment with proposed appointment time shifts and intervention modes to observe simulated reduction in patient no-show risk probability.
+        Experiment with baseline risk scores, proposed appointment time shifts, and intervention modes to observe simulated reduction in patient no-show risk probability.
       </p>
 
       {/* Simulator Controls */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        {/* Control 0: Baseline Risk Slider */}
+        <div style={{ background: 'var(--bg-subtle)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>
+            <span>Baseline Patient Risk:</span>
+            <span style={{ color: 'var(--danger-color)' }}>{baseRisk}%</span>
+          </div>
+          <input
+            type="range"
+            min="20"
+            max="99"
+            value={baseRisk}
+            onChange={(e) => setBaseRisk(Number(e.target.value))}
+            style={{ width: '100%', accentColor: 'var(--danger-color)', cursor: 'pointer' }}
+          />
+        </div>
+
         {/* Control 1: Appointment Time Proposed Shift */}
         <div style={{ background: 'var(--bg-subtle)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
           <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px', color: 'var(--text-main)' }}>
