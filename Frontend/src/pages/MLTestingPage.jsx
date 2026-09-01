@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { fetchMLPrediction } from '../services/mlRiskService';
 
 export default function MLTestingPage() {
@@ -18,11 +18,7 @@ export default function MLTestingPage() {
     ? Math.round(((totalAppointments - effectiveMissed) / totalAppointments) * 100)
     : 100;
 
-  useEffect(() => {
-    runMlInference();
-  }, [totalAppointments, missedAppointments, distanceKm, age, treatmentDurationMonths, appointmentFrequencyDays]);
-
-  const runMlInference = async () => {
+  const runMlInference = useCallback(async () => {
     setLoading(true);
     const mockPatient = {
       id: 'TEST-SIMULATOR',
@@ -38,7 +34,11 @@ export default function MLTestingPage() {
     const res = await fetchMLPrediction(mockPatient);
     setMlResult(res);
     setLoading(false);
-  };
+  }, [totalAppointments, effectiveMissed, distanceKm, age, treatmentDurationMonths, appointmentFrequencyDays]);
+
+  useEffect(() => {
+    runMlInference();
+  }, [runMlInference]);
 
   const applyPreset = (presetType) => {
     if (presetType === 'HIGH_RISK') {
@@ -93,21 +93,21 @@ export default function MLTestingPage() {
           style={{ background: 'var(--danger-soft)', color: 'var(--danger-color)', border: '1px solid var(--danger-color)', fontSize: '0.8rem' }}
           onClick={() => applyPreset('HIGH_RISK')}
         >
-          🔴 High Risk Preset (10 Total, 5 Missed = 50% Rate)
+          🔴 Load High Risk Patient Preset (10 Total, 5 Missed = 50% Rate)
         </button>
         <button
           className="btn-secondary"
           style={{ background: 'var(--warning-soft)', color: 'var(--warning-color)', border: '1px solid var(--warning-color)', fontSize: '0.8rem' }}
           onClick={() => applyPreset('MEDIUM_RISK')}
         >
-          🟠 Medium Risk Preset (12 Total, 3 Missed = 75% Rate)
+          🟠 Load Medium Risk Patient Preset (12 Total, 3 Missed = 75% Rate)
         </button>
         <button
           className="btn-secondary"
           style={{ background: 'var(--accent-soft)', color: 'var(--primary-accent)', border: '1px solid var(--border-focus)', fontSize: '0.8rem' }}
           onClick={() => applyPreset('LOW_RISK')}
         >
-          🟢 Low Risk Preset (15 Total, 0 Missed = 100% Rate)
+          🟢 Load Low Risk Patient Preset (15 Total, 0 Missed = 100% Rate)
         </button>
       </div>
 
