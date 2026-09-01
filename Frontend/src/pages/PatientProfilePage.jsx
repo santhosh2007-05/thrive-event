@@ -19,8 +19,8 @@ export default function PatientProfilePage() {
     return () => unsubscribe();
   }, []);
 
-  // Determine target patient: if ID is provided, use that ID. If Patient role, default to P-10238 (Santhosh M) or P-10234
-  const targetId = id || (role === 'Patient' ? 'P-10238' : 'P-10234');
+  // Determine target patient: if ID is provided, use that ID. If Patient role, default to P-1001 (Santhosh M)
+  const targetId = id || (role === 'Patient' ? 'P-1001' : 'P-1001');
   const patient = patients.find(p => p.id === targetId) || patients[0];
 
   const showToast = (msg) => {
@@ -38,6 +38,11 @@ export default function PatientProfilePage() {
     });
     showToast(`SMS Dispatched to ${FORMATTED_PHONE_NUMBER}: "${smsEntry.message.substring(0, 45)}..."`);
     window.location.href = nativeSmsUri;
+  };
+
+  const handlePatientSelfConfirm = () => {
+    dataStore.confirmPatientAppointment(patient.id, patient.name, 'Patient');
+    showToast(`Visit Confirmed! Appointment status updated to CONFIRMED for ${patient.name}`);
   };
 
   return (
@@ -89,211 +94,125 @@ export default function PatientProfilePage() {
           </div>
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            {patient.status !== 'Confirmed' ? (
+              <button
+                className="btn-primary"
+                onClick={handlePatientSelfConfirm}
+                style={{ background: 'linear-gradient(135deg, #059669, #047857)', boxShadow: '0 4px 15px rgba(5, 150, 105, 0.4)' }}
+              >
+                ✓ Confirm My Visit Attendance
+              </button>
+            ) : (
+              <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '8px 16px', borderRadius: '30px', color: '#065f46', fontSize: '0.85rem', fontWeight: 800 }}>
+                ✓ VISIT CONFIRMED BY PATIENT
+              </div>
+            )}
+
             <a
               href={`tel:${patient.phone}`}
-              className="btn-primary"
+              className="btn-secondary"
               style={{ textDecoration: 'none' }}
             >
               Call Patient ({patient.phone})
             </a>
+
             <button
               className="btn-secondary"
-              style={{ background: '#ffffff', color: '#181816' }}
               onClick={handleSendSms}
             >
-              Send SMS ({FORMATTED_PHONE_NUMBER})
-            </button>
-            <button
-              className="btn-primary"
-              onClick={() => showToast(`Schedule Follow-up modal triggered for ${patient.name}`)}
-            >
-              Schedule Follow-up
+              SMS Reminder ({FORMATTED_PHONE_NUMBER})
             </button>
           </div>
         </div>
       </div>
 
-      {/* Grid: Left Column (Info + Timeline), Right Column (Risk Score & Breakdown) */}
+      {/* Age-Aware Accessible Patient Portal View */}
+      <AgeAwarePatientView
+        patient={patient}
+        onActionLog={(action, pId, prev, next, reason) => {
+          showToast(`Logged Action: ${action} for ${pId}`);
+        }}
+      />
+
+      {/* Baseline Clinical & Logistical Details */}
       <div className="dashboard-grid">
-        {/* Left Column: Patient Information & Attendance Timeline */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Administrative Details */}
-          <div className="full-width-card">
-            <div className="card-header-row">
-              <div className="card-section-title">
-                Patient Administrative Information
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '0.9rem' }}>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>Contact Phone</span>
-                <strong>{patient.phone}</strong>
-              </div>
-
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>SMS Gateway Dispatch</span>
-                <strong style={{ color: 'var(--primary-accent)' }}>{FORMATTED_PHONE_NUMBER}</strong>
-              </div>
-
-              <div style={{ gridColumn: 'span 2' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>Residential Address & Distance</span>
-                <strong>{patient.address} ({patient.distanceKm} km from hospital)</strong>
-              </div>
-
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>Preferred Channel</span>
-                <span className="status-badge scheduled">{patient.preferredComm}</span>
-              </div>
-
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>Assigned Care Team</span>
-                <strong>{patient.assignedDoctor} (Doctor)</strong><br />
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Nurse: {patient.assignedNurse}</span>
-              </div>
-            </div>
+        {/* Left Column: Demographics & Clinical Attributes */}
+        <div className="full-width-card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="card-section-title">
+            DEMOGRAPHICS & CLINICAL ATTRIBUTES
           </div>
 
-          {/* Appointment Attendance Timeline */}
-          <div className="full-width-card">
-            <div className="card-header-row" style={{ marginBottom: '20px' }}>
-              <div className="card-section-title">
-                Appointment Attendance Timeline
-              </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Historical Attendance Record</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Full Name:</span>
+              <strong style={{ color: 'var(--text-main)' }}>{patient.name}</strong>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {patient.history && patient.history.length > 0 ? (
-                patient.history.map((h) => {
-                  const isCompleted = h.status === 'Completed';
-                  const isMissed = h.status === 'Missed';
-                  const statusColor = isCompleted ? '#059669' : isMissed ? '#e11d48' : '#d97706';
-                  const statusBg = isCompleted ? 'var(--accent-soft)' : isMissed ? 'var(--danger-soft)' : 'var(--warning-soft)';
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Hospital Distance:</span>
+              <strong style={{ color: 'var(--info-color)' }}>{patient.distanceKm} km</strong>
+            </div>
 
-                  return (
-                    <div
-                      key={h.id}
-                      style={{
-                        background: 'var(--bg-subtle)',
-                        border: '1px solid var(--border-color)',
-                        borderLeft: `5px solid ${statusColor}`,
-                        borderRadius: '14px',
-                        padding: '16px 20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '6px'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                          🗓️ {h.date}
-                        </div>
-                        <span
-                          style={{
-                            background: statusBg,
-                            color: statusColor,
-                            padding: '4px 12px',
-                            borderRadius: '30px',
-                            fontSize: '0.75rem',
-                            fontWeight: 800,
-                            letterSpacing: '0.3px'
-                          }}
-                        >
-                          {h.status}
-                        </span>
-                      </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Contact Mobile:</span>
+              <strong style={{ color: 'var(--text-main)' }}>{patient.phone}</strong>
+            </div>
 
-                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                        {h.department} • {h.doctor}
-                      </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Home Address:</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-main)', textAlign: 'right' }}>{patient.address || 'Mylapore, Chennai'}</span>
+            </div>
 
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                        "{h.notes}"
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>First time patient intake. No previous history.</div>
-              )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Attending Physician:</span>
+              <strong style={{ color: 'var(--primary-accent)' }}>{patient.assignedDoctor}</strong>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Assigned Staff Nurse:</span>
+              <strong style={{ color: 'var(--text-main)' }}>{patient.assignedNurse}</strong>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Follow-up Risk Card & Explainability Breakdown */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="full-width-card" style={{ borderTop: `6px solid ${patient.risk && patient.risk.riskScore >= 70 ? 'var(--danger-color)' : 'var(--primary-accent)'}` }}>
-            <div className="card-header-row">
-              <div className="card-section-title">
-                Follow-up Risk Prediction
-              </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{patient.risk ? patient.risk.modelVersion : 'v2.1'}</span>
-            </div>
+        {/* Right Column: Attendance History Timeline */}
+        <div className="full-width-card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="card-section-title">
+            APPOINTMENT ATTENDANCE TIMELINE
+          </div>
 
-            {/* Risk Score Pill */}
-            <div style={{ textAlign: 'center', padding: '20px', background: 'var(--bg-subtle)', borderRadius: '16px', margin: '12px 0' }}>
-              <div style={{ fontSize: '3rem', fontWeight: 900, color: patient.risk && patient.risk.riskScore >= 70 ? 'var(--danger-color)' : 'var(--primary-accent)' }}>
-                {patient.risk ? patient.risk.riskScore : 12}%
-              </div>
-              <div className={`status-badge ${patient.risk && patient.risk.riskScore >= 70 ? 'inactive' : 'active'}`} style={{ fontSize: '0.9rem', padding: '6px 16px' }}>
-                {patient.risk ? patient.risk.riskLevel : 'LOW'} RISK
-              </div>
-            </div>
-
-            {/* Why this prediction? */}
-            <div>
-              <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--text-main)', fontWeight: 700 }}>
-                Why this prediction?
-              </h4>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {patient.risk && patient.risk.factorsSorted ? (
-                  patient.risk.factorsSorted.map((factor) => (
-                    <div key={factor.key} style={{ background: 'var(--bg-subtle)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>
-                        <span>{factor.label} ({factor.raw})</span>
-                        <span style={{ color: factor.points > 10 ? 'var(--danger-color)' : 'var(--primary-accent)', fontWeight: 700 }}>
-                          +{factor.points} pts
-                        </span>
-                      </div>
-                      <div style={{ background: 'var(--border-color)', height: '6px', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{
-                          width: `${(factor.points / factor.maxPoints) * 100}%`,
-                          background: factor.points > 10 ? 'var(--danger-color)' : 'var(--primary-accent)',
-                          height: '100%'
-                        }} />
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>First time intake baseline.</div>
-                )}
-              </div>
-            </div>
-
-            {/* Non-fabricated Explanation */}
-            <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-subtle)', padding: '12px', borderRadius: '10px' }}>
-              "{patient.risk ? patient.risk.explanation : 'New patient intake.'}"
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {patient.history && patient.history.length > 0 ? (
+              patient.history.map((item, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: 'var(--bg-subtle)',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    borderLeft: `4px solid ${
+                      item.status === 'Completed' ? 'var(--primary-accent)' :
+                      item.status === 'Missed' ? 'var(--danger-color)' : 'var(--warning-color)'
+                    }`
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
+                    <strong style={{ color: 'var(--text-main)' }}>{item.date} — {item.department}</strong>
+                    <span className={`status-badge ${item.status === 'Completed' ? 'active' : item.status === 'Missed' ? 'inactive' : 'reschedule_requested'}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Doctor: {item.doctor || patient.assignedDoctor} • {item.notes}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No past attendance records found.</div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Age-Aware Communication & Patient Portal Card */}
-      {role === 'Patient' && (
-        <div style={{ marginTop: '12px' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-main)' }}>
-            My Patient Portal & Appointment Confirmation ({patient.name})
-          </h3>
-          <AgeAwarePatientView
-            patient={patient}
-            onActionLog={(action) => {
-              showToast(`Logged to Audit Trail: ${action}`);
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }

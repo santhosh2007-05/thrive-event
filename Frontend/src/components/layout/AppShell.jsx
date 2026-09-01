@@ -5,6 +5,7 @@ import Footer from './Footer';
 import { MOCK_NOTIFICATIONS } from '../../services/mockDataService';
 import audioService from '../../services/audioService';
 import smsService, { FORMATTED_PHONE_NUMBER } from '../../services/smsService';
+import dataStore from '../../services/dataStore';
 
 export const RoleContext = createContext({ role: 'Admin', user: { name: 'Operational Staff', role: 'Admin' } });
 export const useRole = () => useContext(RoleContext);
@@ -18,13 +19,13 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
     highContrast: false
   });
 
-  // SOS Rapid-Touch Emergency Detector (5 Taps within 6 seconds) & Persistent Banner
+  // SOS Rapid-Touch Emergency Detector (Strict 10 Taps within 3 seconds & <400ms inter-tap gap)
   const [showSosModal, setShowSosModal] = useState(false);
   const [sosActiveBanner, setSosActiveBanner] = useState(false);
   const tapTimestampsRef = useRef([]);
 
   const triggerSosEmergencyProtocol = useCallback(() => {
-    // 1. Play extended high-pitch medical emergency alarm siren (10+ seconds)
+    // 1. Play extended high-pitch medical emergency alarm siren
     audioService.playSOSAlarm();
 
     // 2. Open SOS Emergency Modal & Persistent Active Banner
@@ -38,9 +39,25 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
       patientName: uName,
       patientId: 'P-1001',
       messageType: 'CARDIAC_SOS',
-      customBody: `EMERGENCY CARDIAC SOS ALERT: Patient ${uName} triggered 5-tap emergency protocol in Chennai! Immediate ambulance & clinical response required. Contact ${FORMATTED_PHONE_NUMBER}.`,
+      customBody: `EMERGENCY CARDIAC SOS ALERT: Patient ${uName} triggered 10-tap emergency protocol in Chennai! Immediate ambulance & clinical response required. Contact ${FORMATTED_PHONE_NUMBER}.`,
       senderRole: 'SOS Rapid Touch Monitor'
     });
+
+    // 4. Reflect Emergency Event in Backend DataStore & Notifications
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const sosNotification = {
+      id: `NOTIF-SOS-${Date.now()}`,
+      patientId: 'P-1001',
+      patientName: uName,
+      title: '🚨 CRITICAL SOS ALERT: Rapid 10-Tap Trigger',
+      message: `${uName} activated Emergency Cardiac SOS Protocol at ${nowTime}! Hospital emergency line +91 7598357132 notified.`,
+      severity: 'danger',
+      category: 'High Risk',
+      timestamp: 'Just now',
+      isRead: false,
+      actionRequired: 'Emergency Response'
+    };
+    setNotificationsList(prev => [sosNotification, ...prev]);
   }, [user]);
 
   const stopSosEmergency = () => {
@@ -53,11 +70,19 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
   useEffect(() => {
     const handleScreenTap = () => {
       const now = Date.now();
-      // Keep taps within last 6 seconds (6000ms) for easier tap detection
-      tapTimestampsRef.current = [...tapTimestampsRef.current.filter(t => now - t <= 6000), now];
+      const lastTap = tapTimestampsRef.current[tapTimestampsRef.current.length - 1];
 
-      // Check if 5 rapid taps detected!
-      if (tapTimestampsRef.current.length >= 5) {
+      // If more than 400ms passed since last tap, reset counter (prevents accidental trigger from normal browsing)
+      if (lastTap && now - lastTap > 400) {
+        tapTimestampsRef.current = [now];
+        return;
+      }
+
+      // Filter taps within last 3000ms
+      tapTimestampsRef.current = [...tapTimestampsRef.current.filter(t => now - t <= 3000), now];
+
+      // Check if EXACTLY 10 rapid taps detected!
+      if (tapTimestampsRef.current.length >= 10) {
         tapTimestampsRef.current = []; // reset
         triggerSosEmergencyProtocol();
       }
@@ -67,6 +92,14 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
     return () => window.removeEventListener('click', handleScreenTap);
   }, [triggerSosEmergencyProtocol]);
 
+  // Subscribe to DataStore changes for real-time cross-panel synchronization
+  useEffect(() => {
+    const unsubscribe = dataStore.subscribe(() => {
+      // Re-trigger re-render when patient confirms appointment
+    });
+    return () => unsubscribe();
+  }, []);
+
   // Panel-Specific Notification Drawer Filtering
   const roleNotifications = notificationsList.filter(n => {
     if (role === 'Patient') {
@@ -74,10 +107,10 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
       return n.patientName.toLowerCase().includes(uName) || n.patientId === 'P-1001' || n.patientId === 'P-1002';
     }
     if (role === 'Doctor') {
-      return ['P-1001', 'P-1002', 'P-1003', 'P-1004', 'P-1005', 'P-1006'].includes(n.patientId) || n.category === 'Clinical Alert';
+      return ['P-1001', 'P-1002', 'P-1003', 'P-1004', 'P-1005', 'P-1006'].includes(n.patientId) || n.category === 'Clinical Alert' || n.severity === 'danger';
     }
     if (role === 'Nurse') {
-      return n.category === 'High Risk' || n.category === 'Missed Follow-up' || n.category === 'Upcoming';
+      return n.category === 'High Risk' || n.category === 'Missed Follow-up' || n.category === 'Upcoming' || n.severity === 'danger';
     }
     return true;
   });
@@ -200,7 +233,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontWeight: 700, color: 'var(--primary-accent)' }}>ACCESSIBILITY CONTROLS:</span>
-                <span>Patient Preferences & Rapid Touch SOS (Tap screen 5x for Emergency)</span>
+                <span>Patient Preferences & Rapid Touch SOS (Tap screen 10x rapidly for Emergency)</span>
               </div>
 
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -227,7 +260,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
-                  Trigger Cardiac SOS Alarm
+                  Trigger Cardiac SOS Alarm (10 Taps)
                 </button>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
@@ -259,7 +292,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
           <Footer />
         </div>
 
-        {/* 🚨 5-TAP SOS CARDIAC EMERGENCY OVERLAY MODAL */}
+        {/* 🚨 10-TAP SOS CARDIAC EMERGENCY OVERLAY MODAL */}
         {showSosModal && (
           <div className="modal-backdrop" style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', zIndex: 9999 }}>
             <div className="modal-card" style={{
@@ -291,7 +324,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
               </h2>
 
               <p style={{ color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '16px', fontWeight: 600 }}>
-                Rapid emergency gesture detected for <strong>{user?.name || 'Santhosh M'}</strong>! High-pitch medical siren active.
+                Rapid 10-tap emergency gesture detected for <strong>{user?.name || 'Santhosh M'}</strong>! High-pitch medical siren active.
               </p>
 
               <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#9f1239', padding: '12px', borderRadius: '12px', fontSize: '0.85rem', marginBottom: '20px', fontWeight: 700 }}>
