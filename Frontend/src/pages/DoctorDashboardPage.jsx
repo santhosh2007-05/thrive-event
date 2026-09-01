@@ -159,14 +159,14 @@ export default function DoctorDashboardPage() {
               <tr style={{ background: 'var(--bg-subtle)', borderBottom: '2px solid var(--border-color)' }}>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient ID</th>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient Details</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Age / Contact</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Age / Contact</th>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Last Visit</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Next Follow-up</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Risk Score</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Risk Level</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Follow-up Status</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Assigned Staff</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center' }}>Actions</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Next Follow-up</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Risk Score</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Risk Level</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Follow-up Status</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Assigned Staff</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -258,7 +258,7 @@ export default function DoctorDashboardPage() {
           padding: '16px 24px',
           background: 'var(--bg-subtle)',
           display: 'flex',
-          justifyContent: 'space-between',
+          justify.content: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '12px',

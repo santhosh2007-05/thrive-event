@@ -211,13 +211,13 @@ export default function PatientsPage() {
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Name</th>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Age</th>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Contact</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Last Visit</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Next Follow-up</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Score</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Level</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Follow-up Status</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Assigned Staff</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Actions</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Last Visit</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Next Follow-up</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Score</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Level</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Follow-up Status</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Assigned Staff</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
