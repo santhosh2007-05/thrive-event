@@ -4,30 +4,37 @@ from sklearn.ensemble import RandomForestClassifier
 import joblib
 import os
 
-def generate_clinical_dataset(n_samples=2000):
+def generate_clinical_dataset(n_samples=3500):
     np.random.seed(42)
 
-    missed_count = np.random.poisson(lam=1.5, size=n_samples)
-    distance_km = np.random.uniform(1.0, 50.0, size=n_samples)
-    age = np.random.randint(18, 88, size=n_samples)
-    duration_months = np.random.randint(1, 36, size=n_samples)
+    total_appts = np.random.randint(1, 31, size=n_samples)
+    missed_count = np.array([np.random.randint(0, min(total, 16)) for total in total_appts])
+
+    attended_count = total_appts - missed_count
+    attendance_rate = (attended_count / total_appts) * 100.0
+
+    distance_km = np.random.uniform(0.5, 50.0, size=n_samples)
+    age = np.random.randint(1, 100, size=n_samples)
+    duration_months = np.random.randint(1, 60, size=n_samples)
     frequency_days = np.random.choice([7, 14, 30, 60, 90], size=n_samples)
 
-    # Risk log-odds formula based on clinical factors
+    # Risk Log Odds based on Attendance Rate as strong predictor
     risk_score_raw = (
-        (missed_count * 0.45) +
-        (distance_km * 0.035) +
-        (age * 0.015) +
-        (duration_months * 0.02) +
-        (1.0 / (frequency_days / 30.0) * 0.25)
+        ((100.0 - attendance_rate) * 0.05) +
+        (missed_count * 0.15) +
+        (distance_km * 0.03) +
+        (1.0 / (frequency_days / 30.0) * 0.2) +
+        (duration_months * 0.01) +
+        ((1.0 if age >= 65 or age <= 12 else 0.0) * 0.3)
     )
 
-    # Convert to binary target (1 = High Risk of No-Show, 0 = Likely Attended)
-    probabilities = 1.0 / (1.0 + np.exp(-(risk_score_raw - 2.2)))
+    probabilities = 1.0 / (1.0 + np.exp(-(risk_score_raw - 2.8)))
     no_show = (np.random.rand(n_samples) < probabilities).astype(int)
 
     df = pd.DataFrame({
+        'total_appts': total_appts,
         'missed_count': missed_count,
+        'attendance_rate': attendance_rate,
         'distance_km': distance_km,
         'age': age,
         'duration_months': duration_months,
@@ -37,16 +44,17 @@ def generate_clinical_dataset(n_samples=2000):
     return df
 
 def train_and_save_model():
-    print("Generating synthetic clinical patient dataset...")
-    df = generate_clinical_dataset(2500)
+    print("Generating 7-feature clinical dataset...")
+    df = generate_clinical_dataset(3500)
 
-    X = df[['missed_count', 'distance_km', 'age', 'duration_months', 'frequency_days']]
+    features = ['total_appts', 'missed_count', 'attendance_rate', 'distance_km', 'age', 'duration_months', 'frequency_days']
+    X = df[features]
     y = df['no_show']
 
-    print("Training RandomForest Classifier model...")
+    print("Training RandomForest ML Model on 7 features...")
     model = RandomForestClassifier(
-        n_estimators=100,
-        max_depth=6,
+        n_estimators=120,
+        max_depth=7,
         random_state=42
     )
     model.fit(X, y)
@@ -56,10 +64,8 @@ def train_and_save_model():
     joblib.dump(model, model_path)
     print(f"Model successfully saved to {model_path}")
 
-    # Feature Importance Printout
     importances = model.feature_importances_
-    features = X.columns
-    print("\nFeature Importances:")
+    print("\n7-Feature ML Importances:")
     for feat, imp in zip(features, importances):
         print(f" - {feat}: {round(imp * 100, 2)}%")
 

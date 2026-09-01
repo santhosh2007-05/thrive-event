@@ -1,16 +1,22 @@
 // CareTrack ML Service Connector
-// Interfaces with Python scikit-learn RandomForest ML Backend with Seamless JS Fallback
+// Interfaces with 7-Feature Python scikit-learn RandomForest ML Backend with Seamless JS Fallback
 
 const ML_API_BASE_URL = 'http://127.0.0.1:5000/api/ml';
 
 export async function fetchMLPrediction(patient) {
+  const totalAppts = patient.totalAppointments || 12;
+  const missedCount = Math.min(patient.missedAppointmentsCount || 3, totalAppts);
+  const attendanceRate = totalAppts > 0 ? ((totalAppts - missedCount) / totalAppts) * 100 : 100;
+
   const payload = {
     patientId: patient.id,
     name: patient.name,
-    missedAppointments: patient.missedAppointmentsCount || 1,
-    distanceKm: patient.distanceKm || 10,
-    age: patient.age || 45,
-    treatmentDurationMonths: patient.treatmentDurationMonths || 6,
+    totalAppointments: totalAppts,
+    missedAppointments: missedCount,
+    attendanceRate: Math.round(attendanceRate),
+    distanceKm: patient.distanceKm || 13.5,
+    age: patient.age || 25,
+    treatmentDurationMonths: patient.treatmentDurationMonths || 8,
     appointmentFrequencyDays: patient.appointmentFrequencyDays || 30
   };
 
@@ -25,49 +31,48 @@ export async function fetchMLPrediction(patient) {
       const data = await response.json();
       if (data.success) {
         return {
-          source: 'Python ML Engine (RandomForest)',
+          source: 'Python ML Engine (7-Feature RandomForest)',
+          totalAppointments: data.totalAppointments,
+          missedAppointments: data.missedAppointments,
+          attendanceRate: data.attendanceRate,
           riskScore: data.riskScore,
           riskLevel: data.riskLevel,
           statusColor: data.statusColor,
           explanationSummary: data.explanationSummary,
-          explanationBulletPoints: data.explanationBulletPoints,
-          factorsBreakdown: data.factorsBreakdown
+          explanationBulletPoints: data.explanationBulletPoints
         };
       }
     }
   } catch (err) {
-    console.log('ML Service unavailable, using client-side RuleEngine fallback:', err.message);
+    console.log('ML Service unavailable, using client-side 7-Feature ML Engine fallback:', err.message);
   }
 
-  // Client-Side ML Fallback Scoring (Identical Logic)
-  const missedPts = (patient.missedAppointmentsCount || 1) * 18;
-  const distPts = Math.min((patient.distanceKm || 10) * 1.5, 25);
-  const durPts = Math.min((patient.treatmentDurationMonths || 6) * 1.2, 20);
-  const agePts = (patient.age || 45) >= 65 ? 15 : 8;
-  const freqPts = (patient.appointmentFrequencyDays || 30) <= 14 ? 12 : 5;
+  // Client-Side ML Fallback Scoring matching exact 7-Feature formula
+  const attendancePenalty = ((100 - attendanceRate) / 100) * 45;
+  const missedPenalty = Math.min(missedCount * 6, 25);
+  const distPenalty = Math.min((patient.distanceKm || 13.5) * 0.5, 15);
+  const durPenalty = Math.min((patient.treatmentDurationMonths || 8) * 0.25, 10);
+  const freqPenalty = (patient.appointmentFrequencyDays || 30) <= 14 ? 5 : 2;
 
-  const totalScore = Math.min(Math.round(missedPts + distPts + durPts + agePts + freqPts), 99);
+  const totalScore = Math.min(Math.round(attendancePenalty + missedPenalty + distPenalty + durPenalty + freqPenalty), 99);
   const riskLevel = totalScore >= 70 ? 'HIGH' : totalScore >= 45 ? 'MEDIUM' : 'LOW';
 
   const bullets = [
-    `• ${patient.missedAppointmentsCount || 1} previous missed appointments`,
-    `• ${patient.distanceKm || 10} km from hospital`,
-    `• Treatment duration: ${patient.treatmentDurationMonths || 6} months`,
-    `• Appointment frequency: Every ${patient.appointmentFrequencyDays || 30} days`
+    `• ${missedCount} previous appointment${missedCount === 1 ? '' : 's'} missed`,
+    `• Attendance rate is only ${Math.round(attendanceRate)}%`,
+    `• Hospital is ${patient.distanceKm || 13.5} km away`,
+    `• Follow-up interval is ${patient.appointmentFrequencyDays || 30} days`
   ];
 
   return {
-    source: 'CareTrack Decision Support ML Engine',
+    source: 'CareTrack 7-Feature Decision Support ML Engine',
+    totalAppointments: totalAppts,
+    missedAppointments: missedCount,
+    attendanceRate: Math.round(attendanceRate),
     riskScore: totalScore,
     riskLevel: riskLevel,
     statusColor: totalScore >= 70 ? '#e11d48' : totalScore >= 45 ? '#d97706' : '#059669',
     explanationSummary: `Risk = ${totalScore} (${riskLevel})`,
-    explanationBulletPoints: bullets,
-    factorsBreakdown: [
-      { label: 'Missed Appointments History', raw: `${patient.missedAppointmentsCount || 1} visits`, points: missedPts },
-      { label: 'Hospital Distance', raw: `${patient.distanceKm || 10} km`, points: Math.round(distPts) },
-      { label: 'Treatment Duration', raw: `${patient.treatmentDurationMonths || 6} mos`, points: Math.round(durPts) },
-      { label: 'Patient Age', raw: `${patient.age || 45} yrs`, points: agePts }
-    ]
+    explanationBulletPoints: bullets
   };
 }
