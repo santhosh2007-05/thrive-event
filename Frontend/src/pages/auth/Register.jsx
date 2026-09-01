@@ -139,6 +139,54 @@ export default function Register({ onLoginSuccess }) {
 
           <div>
             <label style={{ display: 'block', fontSize: '0.8rem', color: '#cbd5e1', marginBottom: '6px' }}>
+              Contact Phone Number
+            </label>
+            <input
+              type="text"
+              placeholder="+91 7598357132"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                borderRadius: '10px',
+                background: '#242038',
+                border: '1px solid #3b3558',
+                color: '#ffffff',
+                fontSize: '0.9rem',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: '#cbd5e1', marginBottom: '6px' }}>
+              Medical Department
+            </label>
+            <select
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                borderRadius: '10px',
+                background: '#242038',
+                border: '1px solid #3b3558',
+                color: '#ffffff',
+                fontSize: '0.9rem',
+                outline: 'none'
+              }}
+            >
+              <option value="Cardiology">Cardiology</option>
+              <option value="Orthopedics">Orthopedics</option>
+              <option value="Endocrinology">Endocrinology</option>
+              <option value="Dermatology">Dermatology</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: '#cbd5e1', marginBottom: '6px' }}>
               Email Address *
             </label>
             <input
