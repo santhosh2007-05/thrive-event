@@ -26,7 +26,7 @@ export default function DoctorDashboardPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Doctor Executive Banner */}
-      <div className="full-width-card" style={{
+      <div style={{
         position: 'relative',
         borderRadius: '20px',
         overflow: 'hidden',
@@ -35,7 +35,9 @@ export default function DoctorDashboardPage() {
         alignItems: 'center',
         padding: '32px',
         color: 'white',
-        boxShadow: 'var(--shadow-soft)'
+        background: 'var(--bg-surface)',
+        boxShadow: 'var(--shadow-soft)',
+        border: '1px solid var(--border-color)'
       }}>
         <div style={{
           position: 'absolute',
@@ -73,18 +75,21 @@ export default function DoctorDashboardPage() {
       {/* Attending Doctors Roster Overview Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
         {[
-          { name: 'Dr. Sundaramurthy Iyer', dept: 'Cardiology', count: 3, highRisk: 1, avatar: '👨‍⚕️' },
-          { name: 'Dr. Venkatesh Ramanathan', dept: 'Orthopedics', count: 1, highRisk: 0, avatar: '👨‍⚕️' },
-          { name: 'Dr. Subramanian Natarajan', dept: 'Endocrinology', count: 1, highRisk: 0, avatar: '👨‍⚕️' },
-          { name: 'Dr. Kausalya Krishnaswamy', dept: 'Dermatology', count: 1, highRisk: 0, avatar: '👩‍⚕️' }
+          { name: 'Dr. Sundaramurthy Iyer', dept: 'Cardiology', count: 3, highRisk: 1 },
+          { name: 'Dr. Venkatesh Ramanathan', dept: 'Orthopedics', count: 1, highRisk: 0 },
+          { name: 'Dr. Subramanian Natarajan', dept: 'Endocrinology', count: 1, highRisk: 0 },
+          { name: 'Dr. Kausalya Krishnaswamy', dept: 'Dermatology', count: 1, highRisk: 0 }
         ].map((doc, idx) => (
           <div
             key={idx}
-            className="full-width-card"
             style={{
+              background: 'var(--bg-surface)',
+              borderRadius: '16px',
+              border: '1px solid var(--border-color)',
               padding: '16px 20px',
               borderLeft: `5px solid ${doc.highRisk > 0 ? '#e11d48' : '#059669'}`,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-soft)'
             }}
             onClick={() => setDoctorFilter(doc.name)}
           >
@@ -105,7 +110,13 @@ export default function DoctorDashboardPage() {
       </div>
 
       {/* Search & Doctor Filter Bar */}
-      <div className="full-width-card" style={{ padding: '16px 20px' }}>
+      <div style={{
+        background: 'var(--bg-surface)',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)',
+        padding: '16px 20px',
+        boxShadow: 'var(--shadow-soft)'
+      }}>
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
           <input
             type="text"
@@ -134,22 +145,28 @@ export default function DoctorDashboardPage() {
         </div>
       </div>
 
-      {/* 📋 DOCTORS PATIENT CASELOAD OVERVIEW TABLE (Matching Exact Mockup) */}
-      <div className="full-width-card" style={{ padding: '0', overflow: 'hidden' }}>
-        <div className="table-responsive">
-          <table className="admin-data-table" style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+      {/* 📋 BULLETPROOF INLINE-STYLED DOCTORS PATIENT CASELOAD OVERVIEW TABLE */}
+      <div style={{
+        background: 'var(--bg-surface)',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)',
+        overflow: 'hidden',
+        boxShadow: 'var(--shadow-soft)'
+      }}>
+        <div style={{ overflowX: 'auto', width: '100%' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
             <thead>
-              <tr style={{ background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-color)', textTransform: 'none' }}>
-                <th style={{ padding: '14px 16px' }}>Patient ID ↕</th>
-                <th style={{ padding: '14px 16px' }}>Patient Details ↕</th>
-                <th style={{ padding: '14px 16px' }}>Age / Contact ↕</th>
-                <th style={{ padding: '14px 16px' }}>Last Visit ↕</th>
-                <th style={{ padding: '14px 16px' }}>Next Follow-up ↕</th>
-                <th style={{ padding: '14px 16px' }}>Risk Score ↕</th>
-                <th style={{ padding: '14px 16px' }}>Risk Level ↕</th>
-                <th style={{ padding: '14px 16px' }}>Follow-up Status ↕</th>
-                <th style={{ padding: '14px 16px' }}>Assigned Staff ↕</th>
-                <th style={{ padding: '14px 16px', textAlign: 'center' }}>Actions</th>
+              <tr style={{ background: 'var(--bg-subtle)', borderBottom: '2px solid var(--border-color)' }}>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient ID</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient Details</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Age / Contact</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Last Visit</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Next Follow-up</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Risk Score</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Risk Level</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Follow-up Status</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Assigned Staff</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -161,53 +178,62 @@ export default function DoctorDashboardPage() {
                   const isMed = rScore >= 45 && rScore < 70;
 
                   return (
-                    <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s ease' }}>
-                      <td style={{ fontWeight: 800, color: 'var(--primary-accent)', padding: '16px' }}>
+                    <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--primary-accent)' }}>
                         {p.id}
                       </td>
-                      <td style={{ padding: '16px' }}>
+                      <td style={{ padding: '16px 18px' }}>
                         <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '0.92rem' }}>{p.name}</div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{p.department}</div>
                       </td>
-                      <td style={{ padding: '16px' }}>
+                      <td style={{ padding: '16px 18px' }}>
                         <div>{p.age} yrs</div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{p.phone}</div>
                       </td>
-                      <td style={{ padding: '16px', color: 'var(--text-muted)' }}>
-                        🗓️ {p.lastVisitDate}
+                      <td style={{ padding: '16px 18px', color: 'var(--text-muted)' }}>
+                        {p.lastVisitDate}
                       </td>
-                      <td style={{ padding: '16px' }}>
-                        <div style={{ fontWeight: 700 }}>🗓️ {p.nextFollowUpDate}</div>
+                      <td style={{ padding: '16px 18px' }}>
+                        <div style={{ fontWeight: 700 }}>{p.nextFollowUpDate}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.nextFollowUpTime}</div>
                       </td>
-                      <td style={{ padding: '16px', fontWeight: 900, fontSize: '1.05rem', color: isHigh ? 'var(--danger-color)' : isMed ? 'var(--warning-color)' : 'var(--text-main)' }}>
+                      <td style={{ padding: '16px 18px', fontWeight: 900, fontSize: '1.05rem', color: isHigh ? 'var(--danger-color)' : isMed ? 'var(--warning-color)' : 'var(--text-main)' }}>
                         {rScore}%
                       </td>
-                      <td style={{ padding: '16px' }}>
-                        <span className={`status-badge ${isHigh ? 'inactive' : isMed ? 'reschedule_requested' : 'active'}`}>
+                      <td style={{ padding: '16px 18px' }}>
+                        <span style={{
+                          background: isHigh ? 'var(--danger-soft)' : isMed ? 'var(--warning-soft)' : 'var(--accent-soft)',
+                          color: isHigh ? 'var(--danger-color)' : isMed ? 'var(--warning-color)' : 'var(--primary-accent)',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontWeight: 800,
+                          fontSize: '0.75rem',
+                          display: 'inline-block'
+                        }}>
                           {rLevel}
                         </span>
                       </td>
-                      <td style={{ padding: '16px' }}>
+                      <td style={{ padding: '16px 18px' }}>
                         <span style={{
                           background: p.status === 'Confirmed' ? 'var(--accent-soft)' : 'var(--warning-soft)',
                           color: p.status === 'Confirmed' ? 'var(--primary-accent)' : 'var(--warning-color)',
-                          padding: '4px 10px',
+                          padding: '4px 12px',
                           borderRadius: '20px',
-                          fontWeight: 700,
-                          fontSize: '0.75rem'
+                          fontWeight: 800,
+                          fontSize: '0.75rem',
+                          display: 'inline-block'
                         }}>
                           ● {p.status.toUpperCase()}
                         </span>
                       </td>
-                      <td style={{ padding: '16px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      <td style={{ padding: '16px 18px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         <strong style={{ color: 'var(--text-main)' }}>{p.assignedDoctor || 'Dr. Sundaramurthy Iyer'}</strong><br />
                         Nurse: {p.assignedNurse || 'Meenakshi Sundaram'}
                       </td>
-                      <td style={{ padding: '16px', textAlign: 'center' }}>
+                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
                         <button
-                          className="btn-secondary"
-                          style={{ padding: '6px 14px', fontSize: '0.78rem' }}
+                          className="btn-primary"
+                          style={{ padding: '6px 14px', fontSize: '0.78rem', background: 'linear-gradient(135deg, #059669, #047857)', color: 'white', border: 'none', borderRadius: '20px', fontWeight: 700, cursor: 'pointer' }}
                           onClick={() => navigate(`/patients/${p.id}`)}
                         >
                           View Profile
@@ -227,7 +253,7 @@ export default function DoctorDashboardPage() {
           </table>
         </div>
 
-        {/* Table Footer Pagination Controls (Matching Mockup) */}
+        {/* Table Footer Pagination Controls */}
         <div style={{
           padding: '16px 24px',
           background: 'var(--bg-subtle)',
@@ -237,7 +263,8 @@ export default function DoctorDashboardPage() {
           flexWrap: 'wrap',
           gap: '12px',
           fontSize: '0.8rem',
-          color: 'var(--text-muted)'
+          color: 'var(--text-muted)',
+          borderTop: '1px solid var(--border-color)'
         }}>
           <div>
             Showing <strong>1 to {filteredPatients.length}</strong> of <strong>2,481</strong> patients

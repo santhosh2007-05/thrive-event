@@ -82,7 +82,7 @@ export default function PatientsPage() {
       )}
 
       {/* Header Banner with Curated Hospital Caseload Photography */}
-      <div className="full-width-card" style={{
+      <div style={{
         position: 'relative',
         borderRadius: '20px',
         overflow: 'hidden',
@@ -91,7 +91,9 @@ export default function PatientsPage() {
         alignItems: 'center',
         padding: '32px',
         color: 'white',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.15)'
+        background: 'var(--bg-surface)',
+        boxShadow: 'var(--shadow-soft)',
+        border: '1px solid var(--border-color)'
       }}>
         <div style={{
           position: 'absolute',
@@ -128,17 +130,22 @@ export default function PatientsPage() {
       </div>
 
       {/* Filter and Search Control Bar */}
-      <div className="full-width-card" style={{ padding: '16px 20px' }}>
-        <div className="search-action-bar" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div className="search-input-wrap" style={{ flex: '1 1 300px' }}>
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search patient name, ID or phone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+      <div style={{
+        background: 'var(--bg-surface)',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)',
+        padding: '16px 20px',
+        boxShadow: 'var(--shadow-soft)'
+      }}>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search patient name, ID or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ flex: '1 1 300px' }}
+          />
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             {/* Risk Filter */}
@@ -146,7 +153,7 @@ export default function PatientsPage() {
               className="form-control"
               value={riskFilter}
               onChange={(e) => setRiskFilter(e.target.value)}
-              style={{ padding: '8px 12px', fontSize: '0.85rem', width: 'auto' }}
+              style={{ width: 'auto' }}
             >
               <option value="ALL">All Risk Levels</option>
               <option value="VERY HIGH">VERY HIGH</option>
@@ -161,7 +168,7 @@ export default function PatientsPage() {
               className="form-control"
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value)}
-              style={{ padding: '8px 12px', fontSize: '0.85rem', width: 'auto' }}
+              style={{ width: 'auto' }}
             >
               <option value="ALL">All Departments</option>
               <option value="Cardiology">Cardiology</option>
@@ -176,7 +183,7 @@ export default function PatientsPage() {
               className="form-control"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ padding: '8px 12px', fontSize: '0.85rem', width: 'auto' }}
+              style={{ width: 'auto' }}
             >
               <option value="ALL">All Follow-up Statuses</option>
               <option value="Upcoming">Upcoming</option>
@@ -188,72 +195,84 @@ export default function PatientsPage() {
         </div>
       </div>
 
-      {/* Patient Table */}
-      <div className="full-width-card">
-        <div className="table-responsive">
-          <table className="admin-data-table">
+      {/* BULLETPROOF INLINE-STYLED PATIENT TABLE */}
+      <div style={{
+        background: 'var(--bg-surface)',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)',
+        overflow: 'hidden',
+        boxShadow: 'var(--shadow-soft)'
+      }}>
+        <div style={{ overflowX: 'auto', width: '100%' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
             <thead>
-              <tr>
-                <th>Patient ID</th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Contact</th>
-                <th>Last Visit</th>
-                <th>Next Follow-up</th>
-                <th>Risk Score</th>
-                <th>Risk Level</th>
-                <th>Follow-up Status</th>
-                <th>Assigned Staff</th>
-                <th>Actions</th>
+              <tr style={{ background: 'var(--bg-subtle)', borderBottom: '2px solid var(--border-color)' }}>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Patient ID</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Name</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Age</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Contact</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Last Visit</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Next Follow-up</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Score</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Risk Level</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Follow-up Status</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Assigned Staff</th>
+                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredPatients.length > 0 ? (
                 filteredPatients.map((patient) => (
-                  <tr key={patient.id}>
-                    <td style={{ fontWeight: 700 }}>{patient.id}</td>
-                    <td>
-                      <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{patient.name}</div>
+                  <tr key={patient.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--primary-accent)' }}>{patient.id}</td>
+                    <td style={{ padding: '16px 18px' }}>
+                      <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '0.92rem' }}>{patient.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{patient.department}</div>
                     </td>
-                    <td>{patient.age} yrs</td>
-                    <td>{patient.phone}</td>
-                    <td>{patient.lastVisitDate}</td>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{patient.nextFollowUpDate}</div>
+                    <td style={{ padding: '16px 18px' }}>{patient.age} yrs</td>
+                    <td style={{ padding: '16px 18px' }}>{patient.phone}</td>
+                    <td style={{ padding: '16px 18px', color: 'var(--text-muted)' }}>{patient.lastVisitDate}</td>
+                    <td style={{ padding: '16px 18px' }}>
+                      <div style={{ fontWeight: 700 }}>{patient.nextFollowUpDate}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{patient.nextFollowUpTime}</div>
                     </td>
-                    <td style={{ fontWeight: 800 }}>{patient.risk ? patient.risk.riskScore : 12}%</td>
-                    <td>
-                      <span className={`status-badge ${
-                        patient.risk && (patient.risk.riskLevel === 'VERY HIGH' || patient.risk.riskLevel === 'HIGH') ? 'inactive' :
-                        patient.risk && patient.risk.riskLevel === 'MEDIUM' ? 'reschedule_requested' : 'active'
-                      }`}>
+                    <td style={{ padding: '16px 18px', fontWeight: 900, fontSize: '1.05rem' }}>{patient.risk ? patient.risk.riskScore : 12}%</td>
+                    <td style={{ padding: '16px 18px' }}>
+                      <span style={{
+                        background: patient.risk && patient.risk.riskLevel === 'HIGH' ? 'var(--danger-soft)' : patient.risk && patient.risk.riskLevel === 'MEDIUM' ? 'var(--warning-soft)' : 'var(--accent-soft)',
+                        color: patient.risk && patient.risk.riskLevel === 'HIGH' ? 'var(--danger-color)' : patient.risk && patient.risk.riskLevel === 'MEDIUM' ? 'var(--warning-color)' : 'var(--primary-accent)',
+                        padding: '4px 12px',
+                        borderRadius: '20px',
+                        fontWeight: 800,
+                        fontSize: '0.75rem'
+                      }}>
                         {patient.risk ? patient.risk.riskLevel : 'LOW'}
                       </span>
                     </td>
-                    <td>
-                      <span className={`status-badge ${
-                        patient.status === 'Confirmed' ? 'confirmed' :
-                        patient.status === 'Missed' ? 'cancelled' : 'scheduled'
-                      }`}>
-                        {patient.status}
+                    <td style={{ padding: '16px 18px' }}>
+                      <span style={{
+                        background: patient.status === 'Confirmed' ? 'var(--accent-soft)' : 'var(--warning-soft)',
+                        color: patient.status === 'Confirmed' ? 'var(--primary-accent)' : 'var(--warning-color)',
+                        padding: '4px 12px',
+                        borderRadius: '20px',
+                        fontWeight: 800,
+                        fontSize: '0.75rem'
+                      }}>
+                        ● {patient.status.toUpperCase()}
                       </span>
                     </td>
-                    <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      {patient.assignedDoctor ? patient.assignedDoctor : 'Dr. Sundaramurthy Iyer'}<br />
+                    <td style={{ padding: '16px 18px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      <strong style={{ color: 'var(--text-main)' }}>{patient.assignedDoctor || 'Dr. Sundaramurthy Iyer'}</strong><br />
                       Nurse: {patient.assignedNurse || 'Meenakshi Sundaram'}
                     </td>
-                    <td>
-                      <div className="action-buttons-group">
-                        <button
-                          className="btn-primary"
-                          style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-                          onClick={() => navigate(`/patients/${patient.id}`)}
-                        >
-                          View Profile
-                        </button>
-                      </div>
+                    <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                      <button
+                        className="btn-primary"
+                        style={{ padding: '6px 14px', fontSize: '0.78rem', background: 'linear-gradient(135deg, #059669, #047857)', color: 'white', border: 'none', borderRadius: '20px', fontWeight: 700, cursor: 'pointer' }}
+                        onClick={() => navigate(`/patients/${patient.id}`)}
+                      >
+                        View Profile
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -273,14 +292,14 @@ export default function PatientsPage() {
       {showRegisterModal && (
         <div className="modal-backdrop">
           <div className="modal-card" style={{ maxWidth: '640px' }}>
-            <div className="modal-header">
-              <h3>New Patient Intake Registration</h3>
-              <button className="modal-close-btn" onClick={() => setShowRegisterModal(false)}>✕</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontWeight: 800 }}>New Patient Intake Registration</h3>
+              <button style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-main)' }} onClick={() => setShowRegisterModal(false)}>✕</button>
             </div>
 
-            <form className="modal-form" onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div className="form-group">
+                <div>
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Full Name *</label>
                   <input
                     type="text"
@@ -292,7 +311,7 @@ export default function PatientsPage() {
                   />
                 </div>
 
-                <div className="form-group">
+                <div>
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Contact Phone *</label>
                   <input
                     type="text"
@@ -306,7 +325,7 @@ export default function PatientsPage() {
               </div>
 
               {/* Password Integration for New Patient */}
-              <div className="form-group" style={{ position: 'relative' }}>
+              <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Patient Portal Account Password *</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <input
@@ -340,7 +359,7 @@ export default function PatientsPage() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                <div className="form-group">
+                <div>
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Age *</label>
                   <input
                     type="number"
@@ -351,7 +370,7 @@ export default function PatientsPage() {
                   />
                 </div>
 
-                <div className="form-group">
+                <div>
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Gender</label>
                   <select
                     className="form-control"
@@ -364,7 +383,7 @@ export default function PatientsPage() {
                   </select>
                 </div>
 
-                <div className="form-group">
+                <div>
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Department *</label>
                   <select
                     className="form-control"
@@ -381,7 +400,7 @@ export default function PatientsPage() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div className="form-group">
+                <div>
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Distance from Hospital (km)</label>
                   <input
                     type="number"
@@ -392,7 +411,7 @@ export default function PatientsPage() {
                   />
                 </div>
 
-                <div className="form-group">
+                <div>
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Assigned Doctor</label>
                   <select
                     className="form-control"
@@ -407,7 +426,7 @@ export default function PatientsPage() {
                 </div>
               </div>
 
-              <div className="form-actions" style={{ marginTop: '14px' }}>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '14px' }}>
                 <button type="button" className="btn-secondary" onClick={() => setShowRegisterModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary">Register Patient & Open Profile</button>
               </div>
