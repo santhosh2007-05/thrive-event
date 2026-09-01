@@ -1,95 +1,108 @@
-// CareTrack Healthcare Audio Notification Engine using Web Audio API
-// Synthesizes clean operational tones without external audio file dependencies.
+// CareTrack Audio Operations Engine (Web Audio API Synthesizer)
+// Provides realistic operations chime tones and high-pitch medical SOS alarm siren!
 
-class AudioNotificationService {
+class AudioService {
   constructor() {
-    this.audioCtx = null;
-    this.enabled = true;
-    this.volume = 0.6; // 0.0 to 1.0
+    this.ctx = null;
+    this.sosOscillator = null;
   }
 
-  getAudioContext() {
-    if (!this.audioCtx) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (AudioContextClass) {
-        this.audioCtx = new AudioContextClass();
+  initContext() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        this.ctx = new AudioCtx();
       }
     }
-    if (this.audioCtx && this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
     }
-    return this.audioCtx;
   }
 
-  setVolume(vol) {
-    this.volume = Math.max(0, Math.min(1, vol));
-  }
-
-  setEnabled(state) {
-    this.enabled = !!state;
-  }
-
-  playTone(freq, type = 'sine', duration = 0.2, delay = 0) {
-    if (!this.enabled || this.volume <= 0) return;
+  // Play standard operational chimes
+  playTone(freq, type = 'sine', duration = 0.3, vol = 0.3) {
     try {
-      const ctx = this.getAudioContext();
-      if (!ctx) return;
+      this.initContext();
+      if (!this.ctx) return;
 
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
 
       osc.type = type;
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-      gain.gain.setValueAtTime(0.01, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(this.volume * 0.25, ctx.currentTime + delay + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.ctx.destination);
 
-      osc.start(ctx.currentTime + delay);
-      osc.stop(ctx.currentTime + delay + duration);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
     } catch (e) {
-      console.warn('Audio playback error:', e);
+      console.log('Audio tone playback error:', e);
     }
   }
 
-  // Sound 1: 24h Before (Visual only or subtle gentle tone)
   play24hReminder() {
-    this.playTone(523.25, 'sine', 0.15, 0); // C5
+    this.playTone(440, 'sine', 0.4, 0.2); // A4
   }
 
-  // Sound 2: 2h Before (Short notification tone)
   play2hReminder() {
-    this.playTone(587.33, 'sine', 0.15, 0); // D5
-    this.playTone(659.25, 'sine', 0.2, 0.12); // E5
+    this.playTone(554.37, 'sine', 0.4, 0.25); // C#5
+    setTimeout(() => this.playTone(659.25, 'sine', 0.4, 0.25), 150); // E5
   }
 
-  // Sound 3: 30m Before (Short two-tone alert)
   play30mReminder() {
-    this.playTone(659.25, 'sine', 0.12, 0); // E5
-    this.playTone(783.99, 'sine', 0.25, 0.12); // G5
+    this.playTone(880, 'triangle', 0.3, 0.3); // A5
+    setTimeout(() => this.playTone(880, 'triangle', 0.3, 0.3), 200);
   }
 
-  // Sound 4: 10m Before (Noticeable alert tone)
   play10mReminder() {
-    this.playTone(880, 'triangle', 0.15, 0); // A5
-    this.playTone(880, 'triangle', 0.15, 0.15); // A5
-    this.playTone(1046.50, 'triangle', 0.3, 0.30); // C6
+    this.playTone(1046.50, 'square', 0.2, 0.35); // C6
+    setTimeout(() => this.playTone(1046.50, 'square', 0.2, 0.35), 120);
+    setTimeout(() => this.playTone(1046.50, 'square', 0.3, 0.35), 240);
   }
 
-  // Sound 5: Appointment Missed Alert (Distinct operations warning tone)
   playMissedAlert() {
-    this.playTone(440, 'sawtooth', 0.15, 0); // A4
-    this.playTone(349.23, 'sawtooth', 0.25, 0.15); // F4
+    this.playTone(300, 'sawtooth', 0.5, 0.4);
+    setTimeout(() => this.playTone(220, 'sawtooth', 0.6, 0.4), 200);
   }
 
-  // Test sound function for settings panel
-  testSound() {
-    this.play10mReminder();
+  // Professional Medical Emergency Siren Alarm (Dual-Tone Sweeping Alarm Siren)
+  playSOSAlarm() {
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+
+      // Repeat sweeping high-pitched emergency siren 3 times
+      const now = this.ctx.currentTime;
+      for (let i = 0; i < 3; i++) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        const startTime = now + (i * 0.6);
+
+        // Sweep from 900Hz to 1400Hz (Medical SOS Alarm)
+        osc.frequency.setValueAtTime(900, startTime);
+        osc.frequency.linearRampToValueAtTime(1400, startTime + 0.3);
+        osc.frequency.linearRampToValueAtTime(900, startTime + 0.6);
+
+        gain.gain.setValueAtTime(0.5, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.6);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + 0.6);
+      }
+    } catch (e) {
+      console.log('SOS Alarm playback error:', e);
+    }
   }
 }
 
-export const audioService = new AudioNotificationService();
+export const audioService = new AudioService();
 export default audioService;

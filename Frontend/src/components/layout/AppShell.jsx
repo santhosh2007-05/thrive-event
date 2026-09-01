@@ -1,9 +1,10 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
 import { MOCK_NOTIFICATIONS } from '../../services/mockDataService';
 import audioService from '../../services/audioService';
+import smsService, { FORMATTED_PHONE_NUMBER } from '../../services/smsService';
 
 export const RoleContext = createContext({ role: 'Admin', user: { name: 'Operational Staff', role: 'Admin' } });
 export const useRole = () => useContext(RoleContext);
@@ -17,14 +18,54 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
     highContrast: false
   });
 
+  // SOS Rapid-Touch Emergency Detector (5 Taps within 3 seconds)
+  const [showSosModal, setShowSosModal] = useState(false);
+  const tapTimestampsRef = useRef([]);
+
+  useEffect(() => {
+    const handleScreenTap = () => {
+      const now = Date.now();
+      // Keep taps within last 3 seconds (3000ms)
+      tapTimestampsRef.current = [...tapTimestampsRef.current.filter(t => now - t <= 3000), now];
+
+      // Check if 5 rapid taps detected!
+      if (tapTimestampsRef.current.length >= 5) {
+        tapTimestampsRef.current = []; // reset
+        triggerSosEmergencyProtocol();
+      }
+    };
+
+    window.addEventListener('click', handleScreenTap);
+    return () => window.removeEventListener('click', handleScreenTap);
+  }, [user]);
+
+  const triggerSosEmergencyProtocol = () => {
+    // 1. Play high-pitch medical emergency alarm siren
+    audioService.playSOSAlarm();
+
+    // 2. Open SOS Emergency Modal
+    setShowSosModal(true);
+
+    // 3. Dispatch automated Cardiac SOS SMS to operational number +91 7598357132
+    const uName = user && user.name ? user.name : 'Santhosh M';
+    smsService.sendSMS({
+      to: FORMATTED_PHONE_NUMBER,
+      patientName: uName,
+      patientId: 'P-1001',
+      messageType: 'CARDIAC_SOS',
+      customBody: `🚨 EMERGENCY CARDIAC SOS ALERT: Patient ${uName} triggered 5-tap emergency protocol in Chennai! Immediate ambulance & clinical response required. Contact ${FORMATTED_PHONE_NUMBER}.`,
+      senderRole: 'SOS Rapid Touch Monitor'
+    });
+  };
+
   // Panel-Specific Notification Drawer Filtering
   const roleNotifications = notificationsList.filter(n => {
     if (role === 'Patient') {
       const uName = (user && user.name ? user.name : 'Santhosh M').toLowerCase();
-      return n.patientName.toLowerCase().includes(uName) || n.patientId === 'P-10238' || n.patientId === 'P-10234';
+      return n.patientName.toLowerCase().includes(uName) || n.patientId === 'P-1001' || n.patientId === 'P-1002';
     }
     if (role === 'Doctor') {
-      return ['P-10234', 'P-10235', 'P-10236', 'P-10237', 'P-10238'].includes(n.patientId) || n.category === 'Clinical Alert';
+      return ['P-1001', 'P-1002', 'P-1003', 'P-1004', 'P-1005', 'P-1006'].includes(n.patientId) || n.category === 'Clinical Alert';
     }
     if (role === 'Nurse') {
       return n.category === 'High Risk' || n.category === 'Missed Follow-up' || n.category === 'Upcoming';
@@ -44,6 +85,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
     else if (type === '30m') audioService.play30mReminder();
     else if (type === '10m') audioService.play10mReminder();
     else if (type === 'missed') audioService.playMissedAlert();
+    else if (type === 'sos') audioService.playSOSAlarm();
   };
 
   const toggleDarkMode = () => {
@@ -85,7 +127,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
               onToggleDarkMode={toggleDarkMode}
             />
 
-            {/* Quick Accessibility Controls */}
+            {/* Quick Accessibility Controls & Manual SOS Trigger Button */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -96,13 +138,37 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
               marginBottom: '16px',
               border: '1px solid var(--border-color)',
               boxShadow: 'var(--shadow-soft)',
-              fontSize: '0.8rem'
+              fontSize: '0.8rem',
+              flexWrap: 'wrap',
+              gap: '10px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontWeight: 700, color: 'var(--primary-accent)' }}>ACCESSIBILITY CONTROLS:</span>
-                <span>Patient & Accessibility Preferences</span>
+                <span>Patient Preferences & Rapid Touch SOS (Tap screen 5x for Emergency)</span>
               </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
+
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={triggerSosEmergencyProtocol}
+                  style={{
+                    background: 'linear-gradient(135deg, #e11d48, #be123c)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '4px 14px',
+                    borderRadius: '20px',
+                    fontWeight: 800,
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(225, 29, 72, 0.4)'
+                  }}
+                >
+                  🚨 Test Cardiac SOS (5 Taps)
+                </button>
+
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
@@ -131,6 +197,72 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
           {/* Footer */}
           <Footer />
         </div>
+
+        {/* 🚨 5-TAP SOS CARDIAC EMERGENCY OVERLAY MODAL */}
+        {showSosModal && (
+          <div className="modal-backdrop" style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', zIndex: 9999 }}>
+            <div className="modal-card" style={{
+              maxWidth: '520px',
+              border: '3px solid #e11d48',
+              boxShadow: '0 20px 60px rgba(225, 29, 72, 0.5)',
+              textAlign: 'center',
+              animation: 'pulse 1s infinite alternate'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: '#fef2f2',
+                color: '#e11d48',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                fontSize: '2rem'
+              }}>
+                🚨
+              </div>
+
+              <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#e11d48', margin: '0 0 8px 0' }}>
+                EMERGENCY CARDIAC SOS TRIGGERED
+              </h2>
+
+              <p style={{ color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '16px', fontWeight: 600 }}>
+                Rapid 5-touch emergency gesture detected for <strong>{user?.name || 'Santhosh M'}</strong>! High-pitch medical alarm activated.
+              </p>
+
+              <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#9f1239', padding: '12px', borderRadius: '12px', fontSize: '0.85rem', marginBottom: '20px', fontWeight: 700 }}>
+                ✓ Auto-dispatched Emergency Alert SMS to Hospital Line (+91 7598357132) with GPS Location!
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <a
+                  href={`tel:${FORMATTED_PHONE_NUMBER}`}
+                  className="btn-primary"
+                  style={{
+                    background: 'linear-gradient(135deg, #e11d48, #be123c)',
+                    fontSize: '1rem',
+                    padding: '14px',
+                    justifyContent: 'center',
+                    textDecoration: 'none',
+                    boxShadow: '0 4px 15px rgba(225, 29, 72, 0.4)'
+                  }}
+                >
+                  📞 CALL HOSPITAL EMERGENCY AMBULANCE NOW ({FORMATTED_PHONE_NUMBER})
+                </a>
+
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowSosModal(false)}
+                  style={{ padding: '10px' }}
+                >
+                  Cancel / I Am Safe Now
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Notification Drawer Modal */}
         {showNotificationsDrawer && (
@@ -178,7 +310,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
                 <button onClick={() => handleTestSound('2h')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-surface)', color: 'var(--text-main)', cursor: 'pointer' }}>2h Tone</button>
                 <button onClick={() => handleTestSound('30m')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-surface)', color: 'var(--text-main)', cursor: 'pointer' }}>30m Tone</button>
                 <button onClick={() => handleTestSound('10m')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-surface)', color: 'var(--text-main)', cursor: 'pointer' }}>10m Alert</button>
-                <button onClick={() => handleTestSound('missed')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--danger-color)', background: 'var(--danger-soft)', color: 'var(--danger-color)', cursor: 'pointer' }}>Missed Tone</button>
+                <button onClick={() => handleTestSound('sos')} style={{ padding: '3px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--danger-color)', background: 'var(--danger-soft)', color: 'var(--danger-color)', cursor: 'pointer' }}>🚨 SOS Siren</button>
               </div>
             </div>
 

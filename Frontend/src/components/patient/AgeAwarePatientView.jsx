@@ -1,296 +1,239 @@
 import React, { useState } from 'react';
-import audioService from '../../services/audioService';
 import dataStore from '../../services/dataStore';
+import audioService from '../../services/audioService';
 
 export default function AgeAwarePatientView({ patient, onActionLog }) {
-  const [confirmed, setConfirmed] = useState(patient?.status === 'Confirmed');
-  const [actionSuccessMsg, setActionSuccessMsg] = useState('');
-
-  if (!patient) return null;
-
-  const triggerSuccess = (msg) => {
-    setActionSuccessMsg(msg);
-    audioService.play2hReminder();
-    setTimeout(() => setActionSuccessMsg(''), 4000);
-  };
+  const [confirmed, setConfirmed] = useState(patient.status === 'Confirmed');
+  const [rescheduled, setRescheduled] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [newDate, setNewDate] = useState('2026-09-25');
+  const [rescheduleReason, setRescheduleReason] = useState('Personal schedule conflict');
 
   const handleConfirmVisit = () => {
     setConfirmed(true);
+    setShowConfirmModal(false);
+    audioService.play2hReminder();
+
     dataStore.confirmPatientAppointment(patient.id, patient.name, 'Patient');
-    triggerSuccess('Visit confirmed successfully!');
-    if (onActionLog) {
-      onActionLog('Confirmed Appointment', patient.id, 'Unconfirmed', 'Confirmed', 'Patient self-confirmation flow');
-    }
+    if (onActionLog) onActionLog('Confirmed Appointment Visit', patient.id, 'Upcoming', 'Confirmed', 'Patient self-service portal confirmation');
+  };
+
+  const handleRescheduleVisit = (e) => {
+    e.preventDefault();
+    setRescheduled(true);
+    setShowRescheduleModal(false);
+    audioService.play2hReminder();
+
+    dataStore.updateAppointmentStatus(`APT-${patient.id}`, 'Rescheduled Requested', `Patient requested reschedule to ${newDate}. Reason: ${rescheduleReason}`, patient.name, 'Patient');
+    if (onActionLog) onActionLog('Requested Visit Reschedule', patient.id, 'Upcoming', 'Reschedule Requested', `Requested new date ${newDate}`);
   };
 
   return (
-    <div style={{
-      background: 'var(--bg-surface)',
-      border: '1px solid var(--border-color)',
-      borderRadius: '24px',
-      padding: '32px',
-      boxShadow: 'var(--shadow-soft)',
-      maxWidth: '780px',
-      margin: '0 auto',
-      boxSizing: 'border-box'
-    }}>
-      {/* 1. Header Banner (Matching Uploaded Template Image) */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Patient Portal Card with Hospital Building Banner & Date Badge */}
       <div style={{
-        background: 'linear-gradient(135deg, #0b2545, #134074)',
-        color: 'white',
-        padding: '20px 28px',
-        borderRadius: '16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px',
-        marginBottom: '24px'
+        background: 'var(--bg-surface)',
+        borderRadius: '20px',
+        border: '1px solid var(--border-color)',
+        overflow: 'hidden',
+        boxShadow: 'var(--shadow-soft)'
       }}>
-        {/* Hospital Building Circle Badge */}
+        {/* Blue Banner Header with Medical Building Graphics */}
         <div style={{
-          width: '52px',
-          height: '52px',
-          borderRadius: '50%',
-          border: '2px solid rgba(255,255,255,0.3)',
-          background: 'rgba(255,255,255,0.1)',
+          position: 'relative',
+          height: '140px',
+          background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
+          padding: '24px',
+          color: 'white',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0
+          justifyContent: 'space-between',
+          alignItems: 'flex-start'
         }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-            <path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h6M9 14h6M9 18h6" />
-          </svg>
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: 'url(https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: 0.25
+          }} />
+
+          <div style={{ position: 'relative', zIndex: 2 }}>
+            <div style={{ fontSize: '0.75rem', color: '#93c5fd', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 800 }}>
+              CARETRACK PATIENT PORTAL
+            </div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '4px 0 0 0', color: 'white' }}>
+              {patient.department} Outpatient Clinic
+            </h2>
+            <div style={{ fontSize: '0.85rem', color: '#dbeafe', marginTop: '4px' }}>
+              Chennai General Hospital • Main Medical Block
+            </div>
+          </div>
+
+          <div style={{
+            position: 'relative',
+            zIndex: 2,
+            background: 'rgba(255,255,255,0.2)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            padding: '6px 14px',
+            borderRadius: '20px',
+            fontSize: '0.75rem',
+            fontWeight: 800
+          }}>
+            Patient ID: {patient.id}
+          </div>
         </div>
 
-        <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, letterSpacing: '0.5px' }}>
-            YOUR NEXT HOSPITAL VISIT
-          </h2>
-          <span style={{ fontSize: '0.9rem', color: '#93c5fd', opacity: 0.9 }}>
-            We're here to take care of you
-          </span>
+        {/* Card Body: Soft Blue Appointment Date Container */}
+        <div style={{ padding: '24px' }}>
+          <div style={{
+            background: 'var(--bg-subtle)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            padding: '20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+            marginBottom: '20px'
+          }}>
+            <div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>
+                UPCOMING APPOINTMENT DATE & TIME
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-main)', margin: '4px 0' }}>
+                🗓️ {patient.nextFollowUpDate} at {patient.nextFollowUpTime}
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Attending Physician: <strong style={{ color: 'var(--text-main)' }}>{patient.assignedDoctor}</strong>
+              </div>
+            </div>
+
+            <div>
+              {confirmed ? (
+                <span style={{ background: 'var(--accent-soft)', color: 'var(--primary-accent)', padding: '8px 18px', borderRadius: '30px', fontWeight: 800, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  ✓ VISIT CONFIRMED
+                </span>
+              ) : rescheduled ? (
+                <span style={{ background: 'var(--warning-soft)', color: 'var(--warning-color)', padding: '8px 18px', borderRadius: '30px', fontWeight: 800, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  ⏳ RESCHEDULE REQUESTED
+                </span>
+              ) : (
+                <span style={{ background: 'var(--warning-soft)', color: 'var(--warning-color)', padding: '8px 18px', borderRadius: '30px', fontWeight: 800, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  ● CONFIRMATION PENDING
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Clinical Details List */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ background: 'var(--bg-surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-highlight)', color: 'var(--primary-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Specialist Department</div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>{patient.department} Clinic</div>
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--bg-surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-highlight)', color: 'var(--primary-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Assigned Physician</div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>{patient.assignedDoctor}</div>
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--bg-surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-highlight)', color: 'var(--primary-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Assigned Staff Nurse</div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>{patient.assignedNurse}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons Row */}
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              className="btn-primary"
+              style={{ flex: 1, minWidth: '180px', padding: '12px 20px', fontSize: '0.9rem', justifyContent: 'center' }}
+              onClick={() => setShowConfirmModal(true)}
+              disabled={confirmed}
+            >
+              {confirmed ? '✓ Visit Confirmed' : 'Confirm Attendance >'}
+            </button>
+
+            <button
+              className="btn-secondary"
+              style={{ flex: 1, minWidth: '180px', padding: '12px 20px', fontSize: '0.9rem', justifyContent: 'center' }}
+              onClick={() => setShowRescheduleModal(true)}
+            >
+              Request Reschedule >
+            </button>
+          </div>
         </div>
       </div>
 
-      {actionSuccessMsg && (
-        <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', padding: '14px', borderRadius: '12px', fontSize: '1rem', fontWeight: 700, textAlign: 'center', marginBottom: '20px' }}>
-          ✓ {actionSuccessMsg}
+      {/* CONFIRMATION MODAL */}
+      {showConfirmModal && (
+        <div className="modal-backdrop">
+          <div className="modal-card" style={{ maxWidth: '480px', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 8px 0' }}>Confirm Hospital Visit</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+              Confirm attendance for <strong>{patient.name}</strong> on <strong>{patient.nextFollowUpDate} at {patient.nextFollowUpTime}</strong> with {patient.assignedDoctor}?
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => setShowConfirmModal(false)}>Cancel</button>
+              <button className="btn-primary" onClick={handleConfirmVisit}>Yes, Confirm Visit</button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* 2. Prominent Date & Details Container */}
-      <div style={{
-        background: 'var(--bg-subtle)',
-        border: '1px solid var(--border-color)',
-        borderRadius: '16px',
-        padding: '24px',
-        textAlign: 'center',
-        marginBottom: '24px'
-      }}>
-        <div style={{ fontSize: '0.8rem', color: '#2563eb', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
-          — APPOINTMENT DATE —
-        </div>
-
-        {/* Calendar Circle Icon */}
-        <div style={{
-          width: '56px',
-          height: '56px',
-          borderRadius: '50%',
-          background: 'var(--info-soft)',
-          color: 'var(--info-color)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 12px auto'
-        }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-        </div>
-
-        <div style={{ fontSize: '2rem', color: 'var(--text-main)', fontWeight: 900, marginBottom: '2px' }}>
-          {patient.nextFollowUpDate || '05 September 2026'}
-        </div>
-        <div style={{ fontSize: '1.4rem', color: 'var(--info-color)', fontWeight: 800, marginBottom: '20px' }}>
-          {patient.nextFollowUpTime || '10:30 AM'}
-        </div>
-
-        {/* Department & Doctor Row with Icons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l.77.78L12 20.67l7.65-7.66.77-.78a5.4 5.4 0 0 0 0-7.65z" />
-              </svg>
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>DEPARTMENT</span>
-              <strong style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>{patient.department}</strong>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>DOCTOR</span>
-              <strong style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>{patient.assignedDoctor}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Action Buttons with Professional Icons & Chevrons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* GREEN CONFIRM BUTTON */}
-        {!confirmed ? (
-          <button
-            onClick={handleConfirmVisit}
-            style={{
-              background: '#059669',
-              color: 'white',
-              border: 'none',
-              padding: '18px 24px',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(5, 150, 105, 0.3)',
-              transition: 'transform 0.2s ease'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+      {/* RESCHEDULE MODAL */}
+      {showRescheduleModal && (
+        <div className="modal-backdrop">
+          <div className="modal-card" style={{ maxWidth: '480px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 12px 0' }}>Request Appointment Reschedule</h3>
+            <form onSubmit={handleRescheduleVisit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }}>Preferred New Date *</label>
+                <input type="date" className="form-control" value={newDate} onChange={(e) => setNewDate(e.target.value)} required />
               </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>CONFIRM MY APPOINTMENT</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Confirm your appointment to help us serve you better</div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }}>Reason for Rescheduling</label>
+                <textarea className="form-control" rows="3" value={rescheduleReason} onChange={(e) => setRescheduleReason(e.target.value)} required />
               </div>
-            </div>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-        ) : (
-          <div style={{ background: 'var(--accent-soft)', color: 'var(--primary-accent)', padding: '18px', borderRadius: '16px', textAlign: 'center', fontSize: '1.1rem', fontWeight: 800, border: '1px solid var(--border-focus)' }}>
-            ✓ YOUR VISIT IS CONFIRMED! WE ARE EXPECTING YOU.
-          </div>
-        )}
 
-        {/* BLUE PHONE BUTTON */}
-        <a
-          href={`tel:${patient.phone}`}
-          onClick={() => onActionLog && onActionLog('Call Hospital Clicked', patient.id, '', '', 'Elderly phone action')}
-          style={{
-            background: '#2563eb',
-            color: 'white',
-            border: 'none',
-            padding: '18px 24px',
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            textDecoration: 'none',
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-              </svg>
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>CALL HOSPITAL ASSISTANCE</div>
-              <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>+91 98765 43210</div>
-            </div>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '8px' }}>
+                <button type="button" className="btn-secondary" onClick={() => setShowRescheduleModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary">Submit Reschedule Request</button>
+              </div>
+            </form>
           </div>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </a>
-
-        {/* WHITE CALENDAR RESCHEDULE BUTTON */}
-        <button
-          onClick={() => alert(`Please call hospital staff at ${patient.phone} to pick a new date.`)}
-          style={{
-            background: 'var(--bg-surface)',
-            color: 'var(--text-main)',
-            border: '1px solid var(--border-color)',
-            padding: '16px 24px',
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '1rem', fontWeight: 700 }}>CHANGE APPOINTMENT DATE</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Reschedule your appointment</div>
-            </div>
-          </div>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Footer Info Row */}
-      <div style={{
-        marginTop: '24px',
-        paddingTop: '16px',
-        borderTop: '1px solid var(--border-color)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        fontSize: '0.85rem',
-        color: 'var(--text-muted)',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-          <span>Assigned Nurse: <strong style={{ color: 'var(--info-color)' }}>{patient.assignedNurse}</strong></span>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--info-soft)', color: 'var(--info-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="1" y="3" width="15" height="13" />
-              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-              <circle cx="5.5" cy="18.5" r="2.5" />
-              <circle cx="18.5" cy="18.5" r="2.5" />
-            </svg>
-          </div>
-          <span>Need transport help? Call us directly.</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

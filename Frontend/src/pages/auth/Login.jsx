@@ -45,11 +45,10 @@ export default function Login({ onLoginSuccess }) {
     const allPatients = dataStore.getPatients();
     const query = email.toLowerCase().trim();
 
-    // Match patient by name or ID
     const matchedPatient = allPatients.find(p =>
       p.name.toLowerCase().includes(query) ||
       p.id.toLowerCase() === query
-    ) || allPatients.find(p => p.id === 'P-10238') || allPatients[0];
+    ) || allPatients.find(p => p.id === 'P-1001') || allPatients[0];
 
     onLoginSuccess({ name: matchedPatient ? matchedPatient.name : email, role });
 
@@ -90,25 +89,32 @@ export default function Login({ onLoginSuccess }) {
         overflow: 'hidden',
         position: 'relative'
       }}>
-        {/* Top-Right Buttons */}
+        {/* Top-Right Buttons with Professional SVG Icons */}
         <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 10, display: 'flex', gap: '8px' }}>
           <Link
             to="/ml-test"
             style={{
               background: 'linear-gradient(135deg, #059669, #047857)',
               color: 'white',
-              padding: '8px 14px',
+              padding: '8px 16px',
               borderRadius: '30px',
               fontWeight: 700,
               fontSize: '0.8rem',
               textDecoration: 'none',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
               boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
             }}
           >
-            🔬 Test ML Model Sandbox
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 18h8" />
+              <path d="M3 22h18" />
+              <path d="M14 22a7 7 0 1 0-14 0" />
+              <path d="M9 14l5-5" />
+              <path d="M12 6l3 3" />
+            </svg>
+            Test ML Model Sandbox
           </Link>
 
           <button
@@ -128,7 +134,29 @@ export default function Login({ onLoginSuccess }) {
               gap: '6px'
             }}
           >
-            {isLightTheme ? '🌙 Dark Theme' : '☀️ White Theme'}
+            {isLightTheme ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+                Dark Theme
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                White Theme
+              </>
+            )}
           </button>
         </div>
 
@@ -250,7 +278,7 @@ export default function Login({ onLoginSuccess }) {
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="Patient">Patient Portal (e.g. Santhosh)</option>
+                <option value="Patient">Patient Portal (e.g. Santhosh M)</option>
                 <option value="Admin">System Administrator</option>
                 <option value="Doctor">Attending Doctor</option>
                 <option value="Nurse">Staff Nurse</option>
@@ -264,7 +292,7 @@ export default function Login({ onLoginSuccess }) {
               </label>
               <input
                 type="text"
-                placeholder="e.g. santhosh or P-10238"
+                placeholder="e.g. santhosh or P-1001"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -282,7 +310,7 @@ export default function Login({ onLoginSuccess }) {
               />
             </div>
 
-            {/* Password with Working Eye Toggle Button */}
+            {/* Password with Working Professional Eye SVG Toggle Button */}
             <div style={{ position: 'relative' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', color: isLightTheme ? '#64665e' : '#cbd5e1', marginBottom: '6px', fontWeight: 500 }}>
                 Password
