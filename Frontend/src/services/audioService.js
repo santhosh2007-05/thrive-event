@@ -4,7 +4,6 @@
 class AudioService {
   constructor() {
     this.ctx = null;
-    this.sosOscillator = null;
   }
 
   initContext() {
@@ -69,34 +68,34 @@ class AudioService {
     setTimeout(() => this.playTone(220, 'sawtooth', 0.6, 0.4), 200);
   }
 
-  // Professional Medical Emergency Siren Alarm (Dual-Tone Sweeping Alarm Siren)
+  // Extended Medical Emergency Siren Alarm (15 Sweeping Cycles ~10 Seconds)
   playSOSAlarm() {
     try {
       this.initContext();
       if (!this.ctx) return;
 
-      // Repeat sweeping high-pitched emergency siren 3 times
       const now = this.ctx.currentTime;
-      for (let i = 0; i < 3; i++) {
+      // 15 continuous high-pitched emergency siren cycles (~10 seconds duration)
+      for (let i = 0; i < 15; i++) {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
         osc.type = 'sawtooth';
-        const startTime = now + (i * 0.6);
+        const startTime = now + (i * 0.65);
 
-        // Sweep from 900Hz to 1400Hz (Medical SOS Alarm)
+        // Sweep from 900Hz to 1400Hz (High-Pitch Medical SOS Alarm)
         osc.frequency.setValueAtTime(900, startTime);
-        osc.frequency.linearRampToValueAtTime(1400, startTime + 0.3);
-        osc.frequency.linearRampToValueAtTime(900, startTime + 0.6);
+        osc.frequency.linearRampToValueAtTime(1400, startTime + 0.32);
+        osc.frequency.linearRampToValueAtTime(900, startTime + 0.65);
 
-        gain.gain.setValueAtTime(0.5, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.6);
+        gain.gain.setValueAtTime(0.6, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.65);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
         osc.start(startTime);
-        osc.stop(startTime + 0.6);
+        osc.stop(startTime + 0.65);
       }
     } catch (e) {
       console.log('SOS Alarm playback error:', e);
