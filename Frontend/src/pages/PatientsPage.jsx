@@ -15,15 +15,11 @@ export default function PatientsPage() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [newPatientData, setNewPatientData] = useState({
     name: '',
-    age: 45,
+    age: 30,
     gender: 'Male',
     phone: '',
     department: 'Cardiology',
-    distanceKm: 12.0,
-    totalAppointments: 10,
-    missedAppointmentsCount: 1,
-    treatmentDurationMonths: 6,
-    appointmentFrequencyDays: 30,
+    distanceKm: 5.0,
     assignedDoctor: 'Dr. Ankit Mehta',
     assignedNurse: 'Priya Sharma'
   });
@@ -53,21 +49,8 @@ export default function PatientsPage() {
     showToast(`New Patient ${newPatientObj.name} (${newPatientObj.id}) registered successfully!`);
     setShowRegisterModal(false);
 
-    // Reset form
-    setNewPatientData({
-      name: '',
-      age: 45,
-      gender: 'Male',
-      phone: '',
-      department: 'Cardiology',
-      distanceKm: 12.0,
-      totalAppointments: 10,
-      missedAppointmentsCount: 1,
-      treatmentDurationMonths: 6,
-      appointmentFrequencyDays: 30,
-      assignedDoctor: 'Dr. Ankit Mehta',
-      assignedNurse: 'Priya Sharma'
-    });
+    // Immediately navigate to newly generated Patient Profile page
+    navigate(`/patients/${newPatientObj.id}`);
   };
 
   const filteredPatients = patients.filter(patient => {
@@ -238,13 +221,13 @@ export default function PatientsPage() {
                       <div style={{ fontWeight: 600 }}>{patient.nextFollowUpDate}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{patient.nextFollowUpTime}</div>
                     </td>
-                    <td style={{ fontWeight: 800 }}>{patient.risk ? patient.risk.riskScore : 50}%</td>
+                    <td style={{ fontWeight: 800 }}>{patient.risk ? patient.risk.riskScore : 12}%</td>
                     <td>
                       <span className={`status-badge ${
                         patient.risk && (patient.risk.riskLevel === 'VERY HIGH' || patient.risk.riskLevel === 'HIGH') ? 'inactive' :
                         patient.risk && patient.risk.riskLevel === 'MEDIUM' ? 'reschedule_requested' : 'active'
                       }`}>
-                        {patient.risk ? patient.risk.riskLevel : 'MEDIUM'}
+                        {patient.risk ? patient.risk.riskLevel : 'LOW'}
                       </span>
                     </td>
                     <td>
@@ -287,9 +270,9 @@ export default function PatientsPage() {
       {/* REGISTER NEW PATIENT MODAL FORM */}
       {showRegisterModal && (
         <div className="modal-backdrop">
-          <div className="modal-card" style={{ maxWidth: '640px' }}>
+          <div className="modal-card" style={{ maxWidth: '600px' }}>
             <div className="modal-header">
-              <h3>Register New Patient into CareTrack</h3>
+              <h3>New Patient Intake Registration</h3>
               <button className="modal-close-btn" onClick={() => setShowRegisterModal(false)}>✕</button>
             </div>
 
@@ -300,7 +283,7 @@ export default function PatientsPage() {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. Anand Sharma"
+                    placeholder="Enter Your Full Name"
                     value={newPatientData.name}
                     onChange={(e) => setNewPatientData({ ...newPatientData, name: e.target.value })}
                     required
@@ -308,11 +291,11 @@ export default function PatientsPage() {
                 </div>
 
                 <div className="form-group">
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Phone Number *</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Contact Phone *</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="+91 98765 43219"
+                    placeholder="+91 98765 43210"
                     value={newPatientData.phone}
                     onChange={(e) => setNewPatientData({ ...newPatientData, phone: e.target.value })}
                     required
@@ -374,28 +357,6 @@ export default function PatientsPage() {
                 </div>
 
                 <div className="form-group">
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Total Appointments</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={newPatientData.totalAppointments}
-                    onChange={(e) => setNewPatientData({ ...newPatientData, totalAppointments: Number(e.target.value) })}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div className="form-group">
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Missed Appointments History</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={newPatientData.missedAppointmentsCount}
-                    onChange={(e) => setNewPatientData({ ...newPatientData, missedAppointmentsCount: Number(e.target.value) })}
-                  />
-                </div>
-
-                <div className="form-group">
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Assigned Doctor</label>
                   <select
                     className="form-control"
@@ -410,9 +371,13 @@ export default function PatientsPage() {
                 </div>
               </div>
 
+              <div style={{ background: 'var(--bg-highlight)', border: '1px solid var(--border-focus)', padding: '12px 14px', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--primary-accent)' }}>
+                ℹ️ <strong>Clean Intake Baseline:</strong> New patients start with a clean attendance record (0 past missed visits) and <strong>no initial risk penalty</strong>.
+              </div>
+
               <div className="form-actions" style={{ marginTop: '14px' }}>
                 <button type="button" className="btn-secondary" onClick={() => setShowRegisterModal(false)}>Cancel</button>
-                <button type="submit" className="btn-primary">Register Patient & Run ML Risk Assessment</button>
+                <button type="submit" className="btn-primary">Register Patient & Open Profile</button>
               </div>
             </form>
           </div>

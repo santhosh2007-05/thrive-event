@@ -2,7 +2,6 @@
 // Ensures changes in Patient panel instantly update Admin, Doctor, Nurse, Dashboard & Audit Logs!
 
 import { PATIENTS_WITH_RISK, MOCK_APPOINTMENTS, MOCK_AUDIT_LOGS } from './mockDataService';
-import { calculateRiskScore, DEFAULT_RISK_WEIGHTS } from './riskEngine';
 
 const STORAGE_KEYS = {
   PATIENTS: 'caretrack_patients',
@@ -63,42 +62,49 @@ class DataStore {
     }
   }
 
-  // Real-time Action: Register New Patient into System
+  // Real-time Action: Register New Patient (Clean New Intake - No Risk Consequences)
   registerNewPatient(patientData, actorName = 'Admin', role = 'Admin') {
     const patients = this.getPatients();
     const appointments = this.getAppointments();
     const logs = this.getAuditLogs();
 
-    const newId = patientData.id || `P-${10234 + patients.length}`;
-    const riskCalc = calculateRiskScore({
-      missedCount: Number(patientData.missedAppointmentsCount || 1),
-      distanceKm: Number(patientData.distanceKm || 12),
-      frequencyDays: Number(patientData.appointmentFrequencyDays || 30),
-      durationMonths: Number(patientData.treatmentDurationMonths || 6),
-      age: Number(patientData.age || 45)
-    }, DEFAULT_RISK_WEIGHTS);
+    const newId = `P-${10234 + patients.length}`;
+
+    // Clean New Patient Baseline (No Risk Penalty / Consequences)
+    const newPatientRisk = {
+      riskScore: 12,
+      riskLevel: 'LOW',
+      modelVersion: 'New Intake Baseline v1.0',
+      explanation: 'First time intake appointment. No past missed visits.',
+      primaryContributors: ['First time hospital intake', 'Proximity to health facility'],
+      factorsSorted: [
+        { key: 'missed', label: 'Missed Appointments History', raw: '0 visits', points: 0, maxPoints: 30 },
+        { key: 'distance', label: 'Hospital Distance', raw: `${patientData.distanceKm || 5} km`, points: 5, maxPoints: 25 },
+        { key: 'age', label: 'Patient Age', raw: `${patientData.age || 30} yrs`, points: 5, maxPoints: 15 }
+      ]
+    };
 
     const newPatientObj = {
       id: newId,
-      name: patientData.name,
-      age: Number(patientData.age),
+      name: patientData.name || 'New Patient',
+      age: Number(patientData.age || 30),
       gender: patientData.gender || 'Male',
-      phone: patientData.phone || '+919876543219',
-      address: patientData.address || 'Chennai Medical District',
-      distanceKm: Number(patientData.distanceKm || 10),
+      phone: patientData.phone || '+91 98765 43210',
+      address: patientData.address || 'Local City Center',
+      distanceKm: Number(patientData.distanceKm || 5),
       department: patientData.department || 'Cardiology',
       assignedDoctor: patientData.assignedDoctor || 'Dr. Ankit Mehta',
       assignedNurse: patientData.assignedNurse || 'Priya Sharma',
       status: 'Upcoming',
       preferredComm: 'Phone',
-      lastVisitDate: new Date().toISOString().split('T')[0],
+      lastVisitDate: 'N/A (First Intake)',
       nextFollowUpDate: '2026-09-15',
       nextFollowUpTime: '10:30 AM',
-      missedAppointmentsCount: Number(patientData.missedAppointmentsCount || 0),
-      totalAppointments: Number(patientData.totalAppointments || 10),
-      appointmentFrequencyDays: Number(patientData.appointmentFrequencyDays || 30),
-      treatmentDurationMonths: Number(patientData.treatmentDurationMonths || 6),
-      risk: riskCalc,
+      missedAppointmentsCount: 0,
+      totalAppointments: 1,
+      appointmentFrequencyDays: 30,
+      treatmentDurationMonths: 1,
+      risk: newPatientRisk,
       history: [
         {
           id: `HST-${Date.now()}`,
@@ -106,44 +112,44 @@ class DataStore {
           status: 'Completed',
           department: patientData.department || 'Cardiology',
           doctor: patientData.assignedDoctor || 'Dr. Ankit Mehta',
-          notes: 'Patient registered into CareTrack platform.'
+          notes: 'First hospital registration and intake completed.'
         }
       ]
     };
 
     const updatedPatients = [newPatientObj, ...patients];
 
-    // Create initial appointment record
+    // Create initial appointment record for the new patient
     const newAptObj = {
       id: `APT-${newId}`,
       patientId: newId,
-      patientName: patientData.name,
-      patientAge: Number(patientData.age),
-      doctor: patientData.assignedDoctor || 'Dr. Ankit Mehta',
-      department: patientData.department || 'Cardiology',
+      patientName: newPatientObj.name,
+      patientAge: newPatientObj.age,
+      doctor: newPatientObj.assignedDoctor,
+      department: newPatientObj.department,
       date: '2026-09-15',
       time: '10:30 AM',
       status: 'Upcoming',
       confirmationStatus: 'Pending',
-      riskScore: riskCalc.riskScore,
-      riskLevel: riskCalc.riskLevel
+      riskScore: 12,
+      riskLevel: 'LOW'
     };
 
     const updatedAppointments = [newAptObj, ...appointments];
 
-    // Append Audit Log
+    // Append Audit Log with exact timestamp
     const exactTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newLog = {
       id: `AUD-${Date.now()}`,
       timestamp: `${new Date().toISOString().split('T')[0]} ${exactTime}`,
       user: actorName,
       role: role,
-      action: 'Registered New Patient',
+      action: 'Registered New Patient Intake',
       patientId: newId,
       appointmentId: newAptObj.id,
       previousValue: 'Unregistered',
-      newValue: `Registered (${patientData.name})`,
-      reason: 'New patient intake registration',
+      newValue: `Registered (${newPatientObj.name})`,
+      reason: 'First time intake appointment registration',
       ipAddress: '192.168.1.10'
     };
 
