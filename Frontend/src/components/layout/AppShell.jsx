@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
+import React, { useState, useEffect, createContext, useContext, useRef, useCallback } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
@@ -22,24 +22,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
   const [showSosModal, setShowSosModal] = useState(false);
   const tapTimestampsRef = useRef([]);
 
-  useEffect(() => {
-    const handleScreenTap = () => {
-      const now = Date.now();
-      // Keep taps within last 3 seconds (3000ms)
-      tapTimestampsRef.current = [...tapTimestampsRef.current.filter(t => now - t <= 3000), now];
-
-      // Check if 5 rapid taps detected!
-      if (tapTimestampsRef.current.length >= 5) {
-        tapTimestampsRef.current = []; // reset
-        triggerSosEmergencyProtocol();
-      }
-    };
-
-    window.addEventListener('click', handleScreenTap);
-    return () => window.removeEventListener('click', handleScreenTap);
-  }, [user]);
-
-  const triggerSosEmergencyProtocol = () => {
+  const triggerSosEmergencyProtocol = useCallback(() => {
     // 1. Play high-pitch medical emergency alarm siren
     audioService.playSOSAlarm();
 
@@ -56,7 +39,24 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
       customBody: `🚨 EMERGENCY CARDIAC SOS ALERT: Patient ${uName} triggered 5-tap emergency protocol in Chennai! Immediate ambulance & clinical response required. Contact ${FORMATTED_PHONE_NUMBER}.`,
       senderRole: 'SOS Rapid Touch Monitor'
     });
-  };
+  }, [user]);
+
+  useEffect(() => {
+    const handleScreenTap = () => {
+      const now = Date.now();
+      // Keep taps within last 3 seconds (3000ms)
+      tapTimestampsRef.current = [...tapTimestampsRef.current.filter(t => now - t <= 3000), now];
+
+      // Check if 5 rapid taps detected!
+      if (tapTimestampsRef.current.length >= 5) {
+        tapTimestampsRef.current = []; // reset
+        triggerSosEmergencyProtocol();
+      }
+    };
+
+    window.addEventListener('click', handleScreenTap);
+    return () => window.removeEventListener('click', handleScreenTap);
+  }, [triggerSosEmergencyProtocol]);
 
   // Panel-Specific Notification Drawer Filtering
   const roleNotifications = notificationsList.filter(n => {

@@ -23,13 +23,14 @@ const CAROUSEL_SLIDES = [
 
 export default function Login({ onLoginSuccess }) {
   const navigate = useNavigate();
-  const [role, setRole] = useState('Patient');
-  const [email, setEmail] = useState('santhosh');
+  const [role, setRole] = useState('Admin');
+  const [email, setEmail] = useState('admin@caretrack.health');
   const [password, setPassword] = useState('123456');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [isLightTheme, setIsLightTheme] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -40,22 +41,72 @@ export default function Login({ onLoginSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    audioService.play2hReminder();
+    setErrorMsg('');
 
-    const allPatients = dataStore.getPatients();
-    const query = email.toLowerCase().trim();
+    const inputUser = email.toLowerCase().trim();
+    const inputPass = password.trim();
 
-    const matchedPatient = allPatients.find(p =>
-      p.name.toLowerCase().includes(query) ||
-      p.id.toLowerCase() === query
-    ) || allPatients.find(p => p.id === 'P-1001') || allPatients[0];
+    // Strict Credential Validation Protocol
+    if (role === 'Admin') {
+      const validAdminUser = inputUser === 'admin' || inputUser === 'admin@caretrack.health';
+      const validAdminPass = inputPass === '123' || inputPass === '123456';
+      if (!validAdminUser || !validAdminPass) {
+        setErrorMsg('Invalid Admin credentials. Use admin / 123456');
+        audioService.playMissedAlert();
+        return;
+      }
+      audioService.play2hReminder();
+      onLoginSuccess({ name: 'Operational Staff (Admin)', role: 'Admin' });
+      navigate('/dashboard');
+      return;
+    }
 
-    onLoginSuccess({ name: matchedPatient ? matchedPatient.name : email, role });
+    if (role === 'Doctor') {
+      const validDocUser = inputUser === 'doctor' || inputUser === 'sundaramurthy.iyer@caretrack.health';
+      const validDocPass = inputPass === '123' || inputPass === '123456';
+      if (!validDocUser || !validDocPass) {
+        setErrorMsg('Invalid Doctor credentials. Use doctor / 123456');
+        audioService.playMissedAlert();
+        return;
+      }
+      audioService.play2hReminder();
+      onLoginSuccess({ name: 'Dr. Sundaramurthy Iyer', role: 'Doctor' });
+      navigate('/doctor-dashboard');
+      return;
+    }
 
-    if (role === 'Admin') navigate('/dashboard');
-    else if (role === 'Doctor') navigate('/doctor-dashboard');
-    else if (role === 'Nurse') navigate('/nurse-dashboard');
-    else navigate(`/patients/${matchedPatient.id}`);
+    if (role === 'Nurse') {
+      const validNurseUser = inputUser === 'nurse' || inputUser === 'meenakshi.sundaram@caretrack.health';
+      const validNursePass = inputPass === '123' || inputPass === '123456';
+      if (!validNurseUser || !validNursePass) {
+        setErrorMsg('Invalid Nurse credentials. Use nurse / 123456');
+        audioService.playMissedAlert();
+        return;
+      }
+      audioService.play2hReminder();
+      onLoginSuccess({ name: 'Meenakshi Sundaram', role: 'Nurse' });
+      navigate('/nurse-dashboard');
+      return;
+    }
+
+    if (role === 'Patient') {
+      const validPass = inputPass === '123' || inputPass === '123456';
+      if (!validPass) {
+        setErrorMsg('Invalid Patient password. Use 123456');
+        audioService.playMissedAlert();
+        return;
+      }
+
+      const allPatients = dataStore.getPatients();
+      const matchedPatient = allPatients.find(p =>
+        p.name.toLowerCase().includes(inputUser) ||
+        p.id.toLowerCase() === inputUser
+      ) || allPatients.find(p => p.id === 'P-1001') || allPatients[0];
+
+      audioService.play2hReminder();
+      onLoginSuccess({ name: matchedPatient.name, role: 'Patient' });
+      navigate(`/patients/${matchedPatient.id}`);
+    }
   };
 
   const currentSlide = CAROUSEL_SLIDES[activeSlide];
@@ -250,12 +301,27 @@ export default function Login({ onLoginSuccess }) {
           <h2 style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0 0 6px 0', color: isLightTheme ? '#181816' : '#ffffff' }}>
             Sign in to CareTrack
           </h2>
-          <p style={{ fontSize: '0.875rem', color: isLightTheme ? '#64665e' : '#94a3b8', margin: '0 0 28px 0' }}>
+          <p style={{ fontSize: '0.875rem', color: isLightTheme ? '#64665e' : '#94a3b8', margin: '0 0 24px 0' }}>
             Don't have an account?{' '}
             <Link to="/register" style={{ color: isLightTheme ? '#059669' : '#818cf8', fontWeight: 600, textDecoration: 'none' }}>
               Create an account
             </Link>
           </p>
+
+          {errorMsg && (
+            <div style={{
+              background: '#fef2f2',
+              border: '1px solid #fecdd3',
+              color: '#dc2626',
+              padding: '10px 14px',
+              borderRadius: '10px',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              marginBottom: '16px'
+            }}>
+              ✕ {errorMsg}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             {/* Role Selection */}
@@ -265,7 +331,15 @@ export default function Login({ onLoginSuccess }) {
               </label>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value)}
+                onChange={(e) => {
+                  const newRole = e.target.value;
+                  setRole(newRole);
+                  setErrorMsg('');
+                  if (newRole === 'Admin') setEmail('admin@caretrack.health');
+                  else if (newRole === 'Doctor') setEmail('sundaramurthy.iyer@caretrack.health');
+                  else if (newRole === 'Nurse') setEmail('meenakshi.sundaram@caretrack.health');
+                  else setEmail('santhosh');
+                }}
                 style={{
                   width: '100%',
                   padding: '12px 14px',
@@ -278,21 +352,21 @@ export default function Login({ onLoginSuccess }) {
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="Patient">Patient Portal (e.g. Santhosh M)</option>
-                <option value="Admin">System Administrator</option>
-                <option value="Doctor">Attending Doctor</option>
-                <option value="Nurse">Staff Nurse</option>
+                <option value="Admin">System Administrator (admin / 123456)</option>
+                <option value="Doctor">Attending Doctor (doctor / 123456)</option>
+                <option value="Nurse">Staff Nurse (nurse / 123456)</option>
+                <option value="Patient">Patient Portal (santhosh / 123456)</option>
               </select>
             </div>
 
             {/* Email / Username / Patient Name */}
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', color: isLightTheme ? '#64665e' : '#cbd5e1', marginBottom: '6px', fontWeight: 500 }}>
-                Patient Name, Email or ID
+                Username / Email / Patient ID
               </label>
               <input
                 type="text"
-                placeholder="e.g. santhosh or P-1001"
+                placeholder="Enter authorized username or ID"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -401,7 +475,7 @@ export default function Login({ onLoginSuccess }) {
                 boxShadow: '0 4px 15px rgba(5, 150, 105, 0.3)'
               }}
             >
-              Sign in as Patient ({email || 'Santhosh'})
+              Sign in to {role} Portal
             </button>
           </form>
         </div>

@@ -20,6 +20,13 @@ export async function fetchMLPrediction(patient) {
     appointmentFrequencyDays: patient.appointmentFrequencyDays || 30
   };
 
+  const fallbackFactors = [
+    { label: 'Attendance Rate Penalty', raw: `${Math.round(attendanceRate)}%`, points: Math.round(((100 - attendanceRate) / 100) * 45) },
+    { label: 'Missed Appointments Penalty', raw: `${missedCount} visits`, points: Math.min(missedCount * 6, 25) },
+    { label: 'Hospital Distance', raw: `${patient.distanceKm || 13.5} km`, points: Math.round(Math.min((patient.distanceKm || 13.5) * 0.5, 15)) },
+    { label: 'Treatment Duration', raw: `${patient.treatmentDurationMonths || 8} mos`, points: Math.round(Math.min((patient.treatmentDurationMonths || 8) * 0.25, 10)) }
+  ];
+
   try {
     const response = await fetch(`${ML_API_BASE_URL}/predict`, {
       method: 'POST',
@@ -35,11 +42,12 @@ export async function fetchMLPrediction(patient) {
           totalAppointments: data.totalAppointments,
           missedAppointments: data.missedAppointments,
           attendanceRate: data.attendanceRate,
-          riskScore: data.riskScore,
-          riskLevel: data.riskLevel,
-          statusColor: data.statusColor,
-          explanationSummary: data.explanationSummary,
-          explanationBulletPoints: data.explanationBulletPoints
+          riskScore: data.riskScore || 50,
+          riskLevel: data.riskLevel || 'MEDIUM',
+          statusColor: data.statusColor || '#d97706',
+          explanationSummary: data.explanationSummary || 'ML Risk Assessment',
+          explanationBulletPoints: data.explanationBulletPoints || [],
+          factorsBreakdown: data.factorsBreakdown || fallbackFactors
         };
       }
     }
@@ -73,6 +81,7 @@ export async function fetchMLPrediction(patient) {
     riskLevel: riskLevel,
     statusColor: totalScore >= 70 ? '#e11d48' : totalScore >= 45 ? '#d97706' : '#059669',
     explanationSummary: `Risk = ${totalScore} (${riskLevel})`,
-    explanationBulletPoints: bullets
+    explanationBulletPoints: bullets,
+    factorsBreakdown: fallbackFactors
   };
 }

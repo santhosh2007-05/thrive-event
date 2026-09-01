@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchMLPrediction } from '../services/mlRiskService';
+import WhatIfSimulator from '../components/analytics/WhatIfSimulator';
 
 export default function MLTestingPage() {
   const [totalAppointments, setTotalAppointments] = useState(12);
@@ -93,21 +94,21 @@ export default function MLTestingPage() {
           style={{ background: 'var(--danger-soft)', color: 'var(--danger-color)', border: '1px solid var(--danger-color)', fontSize: '0.8rem' }}
           onClick={() => applyPreset('HIGH_RISK')}
         >
-          🔴 Load High Risk Patient Preset (10 Total, 5 Missed = 50% Rate)
+          🔴 High Risk Preset (10 Total, 5 Missed = 50% Rate)
         </button>
         <button
           className="btn-secondary"
           style={{ background: 'var(--warning-soft)', color: 'var(--warning-color)', border: '1px solid var(--warning-color)', fontSize: '0.8rem' }}
           onClick={() => applyPreset('MEDIUM_RISK')}
         >
-          🟠 Load Medium Risk Patient Preset (12 Total, 3 Missed = 75% Rate)
+          🟠 Medium Risk Preset (12 Total, 3 Missed = 75% Rate)
         </button>
         <button
           className="btn-secondary"
           style={{ background: 'var(--accent-soft)', color: 'var(--primary-accent)', border: '1px solid var(--border-focus)', fontSize: '0.8rem' }}
           onClick={() => applyPreset('LOW_RISK')}
         >
-          🟢 Load Low Risk Patient Preset (15 Total, 0 Missed = 100% Rate)
+          🟢 Low Risk Preset (15 Total, 0 Missed = 100% Rate)
         </button>
       </div>
 
@@ -270,7 +271,7 @@ export default function MLTestingPage() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {mlResult.explanationBulletPoints.map((b, i) => (
+                  {mlResult.explanationBulletPoints?.map((b, i) => (
                     <div key={i} style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ color: mlResult.statusColor, fontWeight: 800 }}>●</span>
                       <span>{b.replace('• ', '')}</span>
@@ -282,6 +283,9 @@ export default function MLTestingPage() {
           </div>
         </div>
       </div>
+
+      {/* Embedded What-If Simulation Tool */}
+      <WhatIfSimulator initialPatient={{ riskScore: mlResult?.riskScore || 84 }} />
     </div>
   );
 }
