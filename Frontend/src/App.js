@@ -22,7 +22,7 @@ import HelpPage from './pages/HelpPage';
 
 export default function App() {
   const [role, setRole] = useState('Admin');
-  const [user, setUser] = useState({ name: 'Operational Staff', role: 'Admin' });
+  const [user, setUser] = useState({ name: 'System Administrator', role: 'Admin' });
 
   const handleRoleChange = (newRole) => {
     setRole(newRole);
@@ -59,17 +59,17 @@ export default function App() {
           }
         />
 
-        {/* Protected Application Routes wrapped in AppShell */}
+        {/* Application Routes wrapped in AppShell */}
         <Route
           path="/*"
           element={
             <AppShell role={role} onRoleChange={handleRoleChange} user={user} onLogout={handleLogout}>
               <Routes>
-                {/* Admin Only Dashboard */}
+                {/* Admin Command Center */}
                 <Route
                   path="/dashboard"
                   element={
-                    <ProtectedRoute allowedRoles={['Admin']}>
+                    <ProtectedRoute role={role} allowedRoles={['Admin']}>
                       <DashboardPage />
                     </ProtectedRoute>
                   }
@@ -79,7 +79,7 @@ export default function App() {
                 <Route
                   path="/doctor-dashboard"
                   element={
-                    <ProtectedRoute allowedRoles={['Doctor', 'Admin']}>
+                    <ProtectedRoute role={role} allowedRoles={['Doctor', 'Admin']}>
                       <DoctorDashboardPage />
                     </ProtectedRoute>
                   }
@@ -89,7 +89,7 @@ export default function App() {
                 <Route
                   path="/nurse-dashboard"
                   element={
-                    <ProtectedRoute allowedRoles={['Nurse', 'Admin']}>
+                    <ProtectedRoute role={role} allowedRoles={['Nurse', 'Admin']}>
                       <NurseDashboardPage />
                     </ProtectedRoute>
                   }
@@ -108,7 +108,7 @@ export default function App() {
                 <Route
                   path="/users"
                   element={
-                    <ProtectedRoute allowedRoles={['Admin']}>
+                    <ProtectedRoute role={role} allowedRoles={['Admin']}>
                       <UsersRolesPage />
                     </ProtectedRoute>
                   }
@@ -116,7 +116,7 @@ export default function App() {
                 <Route
                   path="/audit-logs"
                   element={
-                    <ProtectedRoute allowedRoles={['Admin']}>
+                    <ProtectedRoute role={role} allowedRoles={['Admin']}>
                       <AuditLogsPage />
                     </ProtectedRoute>
                   }

@@ -2,26 +2,27 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 export default function ProtectedRoute({ role, allowedRoles, children }) {
-  const isAllowed = allowedRoles.includes(role);
+  // ADMIN HAS UNRESTRICTED FULL ACCESS TO ALL MODULES
+  const isAllowed = role === 'Admin' || (allowedRoles && allowedRoles.includes(role));
 
   if (!isAllowed) {
     return (
       <div style={{
-        background: '#ffffff',
-        border: '1px solid #fecdd3',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--danger-soft)',
         borderRadius: '16px',
         padding: '40px',
         textAlign: 'center',
         maxWidth: '540px',
         margin: '40px auto',
-        boxShadow: '0 10px 30px rgba(220, 38, 38, 0.08)'
+        boxShadow: 'var(--shadow-soft)'
       }}>
         <div style={{
           width: '56px',
           height: '56px',
           borderRadius: '50%',
-          background: '#fef2f2',
-          color: '#dc2626',
+          background: 'var(--danger-soft)',
+          color: 'var(--danger-color)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -33,16 +34,16 @@ export default function ProtectedRoute({ role, allowedRoles, children }) {
           </svg>
         </div>
 
-        <h3 style={{ fontSize: '1.4rem', color: '#0f172a', margin: '0 0 8px 0', fontWeight: 800 }}>
+        <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', margin: '0 0 8px 0', fontWeight: 800 }}>
           Access Restricted
         </h3>
-        <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.5', margin: '0 0 24px 0' }}>
-          This module contains administrative healthcare data restricted to <strong>{allowedRoles.join(', ')}</strong> roles. Your current session role is <strong>{role}</strong>.
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5', margin: '0 0 24px 0' }}>
+          This module is restricted to <strong>{allowedRoles ? allowedRoles.join(', ') : 'Staff'}</strong> roles. Your current session role is <strong>{role}</strong>.
         </p>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <Link to="/dashboard" className="btn-primary">
-            Return to My Dashboard
+          <Link to="/" className="btn-primary">
+            Return to My Portal
           </Link>
         </div>
       </div>

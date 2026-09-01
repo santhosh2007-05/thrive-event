@@ -1,4 +1,4 @@
-// CareTrack Real-Time SMS Dispatch Engine with Cross-Panel Synchronization
+// CareTrack Real-Time SMS Dispatch Engine with Precise Live Timestamp Synchronization
 // Target Operational Number: +91 7598357132
 
 import dataStore from './dataStore';
@@ -16,6 +16,7 @@ class SMSService {
 
   init() {
     if (!localStorage.getItem(SMS_STORAGE_KEY)) {
+      const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const initialSms = [
         {
           id: 'SMS-101',
@@ -23,8 +24,9 @@ class SMSService {
           patientName: 'Ramesh Kumar',
           patientId: 'P-10234',
           message: 'CareTrack Alert: Your Cardiology follow-up appointment is scheduled for 28 Sep 2026 at 10:30 AM with Dr. Ankit Mehta. Please confirm.',
-          timestamp: new Date(Date.now() - 3600000).toLocaleString(),
-          status: 'Delivered'
+          timestamp: nowTime,
+          status: 'Delivered',
+          senderRole: 'Admin'
         }
       ];
       localStorage.setItem(SMS_STORAGE_KEY, JSON.stringify(initialSms));
@@ -50,9 +52,12 @@ class SMSService {
     }
   }
 
-  // Real-time SMS Dispatch Generator (Syncs across all panels)
-  sendSMS({ to = FORMATTED_PHONE_NUMBER, patientName = 'Ramesh Kumar', patientId = 'P-10234', messageType = 'REMINDER', customBody = '', senderRole = 'Staff' }) {
+  // Real-time SMS Dispatcher with Precise Current Time Sync (e.g., 9:09 PM)
+  sendSMS({ to = FORMATTED_PHONE_NUMBER, patientName = 'Ramesh Kumar', patientId = 'P-10234', messageType = 'REMINDER', customBody = '', senderRole = 'Admin' }) {
     let bodyText = customBody;
+
+    // Precise Live Current Time (e.g. 9:09 PM)
+    const exactTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     if (!bodyText) {
       if (messageType === 'REMINDER') {
@@ -72,7 +77,7 @@ class SMSService {
       patientName: patientName,
       patientId: patientId,
       message: bodyText,
-      timestamp: new Date().toLocaleString(),
+      timestamp: exactTime,
       status: 'Sent (Delivered)',
       senderRole: senderRole
     };
@@ -84,18 +89,17 @@ class SMSService {
     // Audio Chime
     audioService.play2hReminder();
 
-    // Sync with central DataStore Audit Ledger (reflected across Admin, Doctor, Nurse, Audit Logs)
+    // Log to central DataStore Audit Ledger & Patient Notifications with exact time (e.g. 9:09 PM)
     dataStore.updateAppointmentStatus(
       `APT-${patientId}`,
       'Pending',
-      `[SMS DISPATCHED to ${FORMATTED_PHONE_NUMBER}]: "${bodyText.substring(0, 60)}..."`,
-      `${senderRole} SMS System`,
+      `[SMS DISPATCHED AT ${exactTime}]: "${bodyText.substring(0, 60)}..."`,
+      `${senderRole} SMS Gateway`,
       senderRole
     );
 
     this.notify();
 
-    // Return SMS Entry and native URI
     const nativeSmsUri = `sms:+917598357132?body=${encodeURIComponent(bodyText)}`;
     return { smsEntry, nativeSmsUri };
   }

@@ -2,6 +2,7 @@
 // Ensures changes in Patient panel instantly update Admin, Doctor, Nurse, Dashboard & Audit Logs!
 
 import { PATIENTS_WITH_RISK, MOCK_APPOINTMENTS, MOCK_AUDIT_LOGS } from './mockDataService';
+import { calculateRiskScore, DEFAULT_RISK_WEIGHTS } from './riskEngine';
 
 const STORAGE_KEYS = {
   PATIENTS: 'caretrack_patients',
@@ -62,15 +63,109 @@ class DataStore {
     }
   }
 
+  // Real-time Action: Register New Patient into System
+  registerNewPatient(patientData, actorName = 'Admin', role = 'Admin') {
+    const patients = this.getPatients();
+    const appointments = this.getAppointments();
+    const logs = this.getAuditLogs();
+
+    const newId = patientData.id || `P-${10234 + patients.length}`;
+    const riskCalc = calculateRiskScore({
+      missedCount: Number(patientData.missedAppointmentsCount || 1),
+      distanceKm: Number(patientData.distanceKm || 12),
+      frequencyDays: Number(patientData.appointmentFrequencyDays || 30),
+      durationMonths: Number(patientData.treatmentDurationMonths || 6),
+      age: Number(patientData.age || 45)
+    }, DEFAULT_RISK_WEIGHTS);
+
+    const newPatientObj = {
+      id: newId,
+      name: patientData.name,
+      age: Number(patientData.age),
+      gender: patientData.gender || 'Male',
+      phone: patientData.phone || '+919876543219',
+      address: patientData.address || 'Chennai Medical District',
+      distanceKm: Number(patientData.distanceKm || 10),
+      department: patientData.department || 'Cardiology',
+      assignedDoctor: patientData.assignedDoctor || 'Dr. Ankit Mehta',
+      assignedNurse: patientData.assignedNurse || 'Priya Sharma',
+      status: 'Upcoming',
+      preferredComm: 'Phone',
+      lastVisitDate: new Date().toISOString().split('T')[0],
+      nextFollowUpDate: '2026-09-15',
+      nextFollowUpTime: '10:30 AM',
+      missedAppointmentsCount: Number(patientData.missedAppointmentsCount || 0),
+      totalAppointments: Number(patientData.totalAppointments || 10),
+      appointmentFrequencyDays: Number(patientData.appointmentFrequencyDays || 30),
+      treatmentDurationMonths: Number(patientData.treatmentDurationMonths || 6),
+      risk: riskCalc,
+      history: [
+        {
+          id: `HST-${Date.now()}`,
+          date: new Date().toISOString().split('T')[0],
+          status: 'Completed',
+          department: patientData.department || 'Cardiology',
+          doctor: patientData.assignedDoctor || 'Dr. Ankit Mehta',
+          notes: 'Patient registered into CareTrack platform.'
+        }
+      ]
+    };
+
+    const updatedPatients = [newPatientObj, ...patients];
+
+    // Create initial appointment record
+    const newAptObj = {
+      id: `APT-${newId}`,
+      patientId: newId,
+      patientName: patientData.name,
+      patientAge: Number(patientData.age),
+      doctor: patientData.assignedDoctor || 'Dr. Ankit Mehta',
+      department: patientData.department || 'Cardiology',
+      date: '2026-09-15',
+      time: '10:30 AM',
+      status: 'Upcoming',
+      confirmationStatus: 'Pending',
+      riskScore: riskCalc.riskScore,
+      riskLevel: riskCalc.riskLevel
+    };
+
+    const updatedAppointments = [newAptObj, ...appointments];
+
+    // Append Audit Log
+    const exactTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: `${new Date().toISOString().split('T')[0]} ${exactTime}`,
+      user: actorName,
+      role: role,
+      action: 'Registered New Patient',
+      patientId: newId,
+      appointmentId: newAptObj.id,
+      previousValue: 'Unregistered',
+      newValue: `Registered (${patientData.name})`,
+      reason: 'New patient intake registration',
+      ipAddress: '192.168.1.10'
+    };
+
+    const updatedLogs = [newLog, ...logs];
+
+    localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(updatedPatients));
+    localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(updatedAppointments));
+    localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(updatedLogs));
+
+    this.notify();
+    return { newPatientObj, updatedPatients };
+  }
+
   // Real-time Action: Confirm Patient Appointment
   confirmPatientAppointment(patientId, actorName = 'Patient', role = 'Patient') {
     const patients = this.getPatients();
     const appointments = this.getAppointments();
     const logs = this.getAuditLogs();
 
+    const exactTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let targetPatientName = patientId;
 
-    // 1. Update Patient
     const updatedPatients = patients.map(p => {
       if (p.id === patientId) {
         targetPatientName = p.name;
@@ -79,7 +174,6 @@ class DataStore {
       return p;
     });
 
-    // 2. Update Appointment
     const updatedAppointments = appointments.map(apt => {
       if (apt.patientId === patientId || apt.patientName === targetPatientName) {
         return {
@@ -91,10 +185,9 @@ class DataStore {
       return apt;
     });
 
-    // 3. Append Immutable Audit Log
     const newLog = {
       id: `AUD-${Date.now()}`,
-      timestamp: new Date().toLocaleString(),
+      timestamp: `${new Date().toISOString().split('T')[0]} ${exactTime}`,
       user: actorName,
       role: role,
       action: 'Confirmed Appointment Visit',
@@ -108,7 +201,6 @@ class DataStore {
 
     const updatedLogs = [newLog, ...logs];
 
-    // Save to Storage
     localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(updatedPatients));
     localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(updatedAppointments));
     localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(updatedLogs));
@@ -122,6 +214,7 @@ class DataStore {
     const appointments = this.getAppointments();
     const logs = this.getAuditLogs();
 
+    const exactTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let previousStatus = 'Pending';
     let targetPatientId = 'P-10234';
 
@@ -140,7 +233,7 @@ class DataStore {
 
     const newLog = {
       id: `AUD-${Date.now()}`,
-      timestamp: new Date().toLocaleString(),
+      timestamp: `${new Date().toISOString().split('T')[0]} ${exactTime}`,
       user: actorName,
       role: role,
       action: `Changed status to ${newStatus}`,

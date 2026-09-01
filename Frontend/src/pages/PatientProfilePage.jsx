@@ -11,7 +11,7 @@ export default function PatientProfilePage() {
   const { role } = useRole();
   const [toastMsg, setToastMsg] = useState('');
 
-  // Strict Data Isolation: If logged in as Patient, force viewing ONLY own profile (P-10234)
+  // Unrestricted Data Access: If logged in as Patient, view own profile (P-10234), otherwise view requested ID
   const targetId = role === 'Patient' ? 'P-10234' : id;
   const patient = PATIENTS_WITH_RISK.find(p => p.id === targetId) || PATIENTS_WITH_RISK[0];
 
@@ -29,7 +29,6 @@ export default function PatientProfilePage() {
       messageType: 'REMINDER'
     });
     showToast(`SMS Dispatched to ${FORMATTED_PHONE_NUMBER}: "${smsEntry.message.substring(0, 45)}..."`);
-    // Launch native phone SMS app
     window.location.href = nativeSmsUri;
   };
 
@@ -108,9 +107,9 @@ export default function PatientProfilePage() {
 
       {/* Grid: Left Column (Info + Timeline), Right Column (Risk Score & Breakdown) */}
       <div className="dashboard-grid">
-        {/* Left Column: Patient Information & History */}
+        {/* Left Column: Patient Information & Attendance Timeline */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Patient Details */}
+          {/* Administrative Details */}
           <div className="full-width-card">
             <div className="card-header-row">
               <div className="card-section-title">
@@ -147,28 +146,65 @@ export default function PatientProfilePage() {
             </div>
           </div>
 
-          {/* Timeline of History */}
-          <div className="timeline-card">
-            <div className="card-header-row">
+          {/* Appointment Attendance Timeline (Bulletproof Inline Flex Card Styling) */}
+          <div className="full-width-card">
+            <div className="card-header-row" style={{ marginBottom: '20px' }}>
               <div className="card-section-title">
                 Appointment Attendance Timeline
               </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Historical Attendance Record</span>
             </div>
 
-            <div className="timeline-list">
-              {patient.history.map((h) => (
-                <div key={h.id} className="timeline-item">
-                  <div className={`timeline-dot ${h.status.toLowerCase()}`} />
-                  <div className="timeline-date-status">
-                    <span className="timeline-date">{h.date}</span>
-                    <span className={`status-badge ${h.status === 'Completed' ? 'confirmed' : h.status === 'Missed' ? 'cancelled' : 'reschedule_requested'}`}>
-                      {h.status}
-                    </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {patient.history.map((h) => {
+                const isCompleted = h.status === 'Completed';
+                const isMissed = h.status === 'Missed';
+                const statusColor = isCompleted ? '#059669' : isMissed ? '#e11d48' : '#d97706';
+                const statusBg = isCompleted ? 'var(--accent-soft)' : isMissed ? 'var(--danger-soft)' : 'var(--warning-soft)';
+
+                return (
+                  <div
+                    key={h.id}
+                    style={{
+                      background: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-color)',
+                      borderLeft: `5px solid ${statusColor}`,
+                      borderRadius: '14px',
+                      padding: '16px 20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                        🗓️ {h.date}
+                      </div>
+                      <span
+                        style={{
+                          background: statusBg,
+                          color: statusColor,
+                          padding: '4px 12px',
+                          borderRadius: '30px',
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          letterSpacing: '0.3px'
+                        }}
+                      >
+                        {h.status}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                      {h.department} • {h.doctor}
+                    </div>
+
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                      "{h.notes}"
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>{h.department} • {h.doctor}</div>
-                  <div className="doctor-notes-snippet">{h.notes}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
