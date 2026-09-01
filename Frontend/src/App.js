@@ -2,29 +2,27 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
 import DashboardPage from './pages/DashboardPage';
-import DoctorDashboardPage from './pages/DoctorDashboardPage';
-import NurseDashboardPage from './pages/NurseDashboardPage';
 import PatientsPage from './pages/PatientsPage';
 import PatientProfilePage from './pages/PatientProfilePage';
+import DoctorDashboardPage from './pages/DoctorDashboardPage';
+import NurseDashboardPage from './pages/NurseDashboardPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import AppointmentDetailPage from './pages/AppointmentDetailPage';
 import RiskPredictionPage from './pages/RiskPredictionPage';
+import MLTestingPage from './pages/MLTestingPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ReportsPage from './pages/ReportsPage';
 import UsersRolesPage from './pages/UsersRolesPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import Admin from './Admin/Admin';
-import './App.css';
-import './Admin/Admin.css';
 
-function App() {
-  const [user, setUser] = useState({ name: 'System Admin', role: 'Admin' });
+export default function App() {
   const [role, setRole] = useState('Admin');
+  const [user, setUser] = useState({ name: 'Operational Staff', role: 'Admin' });
 
   const handleRoleChange = (newRole) => {
     setRole(newRole);
@@ -33,7 +31,7 @@ function App() {
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
-    setRole(userData.role);
+    setRole(userData.role || 'Admin');
   };
 
   const handleLogout = () => {
@@ -41,182 +39,92 @@ function App() {
     window.location.href = '/login';
   };
 
-  const getRootRedirect = () => {
-    if (role === 'Admin') return '/dashboard';
-    if (role === 'Doctor') return '/doctor-dashboard';
-    if (role === 'Nurse') return '/nurse-dashboard';
-    if (role === 'Patient') return '/patients/P-10234';
-    return '/dashboard';
-  };
-
   return (
     <BrowserRouter>
       <Routes>
+        {/* Root URL Opens LOGIN Page First */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         {/* Auth Routes */}
         <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/register" element={<Register onLoginSuccess={handleLoginSuccess} />} />
 
-        {/* Standalone Admin Route Guarded for Admin Role */}
+        {/* Standalone ML Model Sandbox Route */}
         <Route
-          path="/admin"
+          path="/ml-test"
           element={
-            <ProtectedRoute role={role} allowedRoles={['Admin']}>
-              <Admin />
-            </ProtectedRoute>
+            <AppShell role={role} onRoleChange={handleRoleChange} user={user} onLogout={handleLogout}>
+              <MLTestingPage />
+            </AppShell>
           }
         />
 
-        {/* Main Application Shell Wrapped Routes */}
+        {/* Protected Application Routes wrapped in AppShell */}
         <Route
           path="/*"
           element={
             <AppShell role={role} onRoleChange={handleRoleChange} user={user} onLogout={handleLogout}>
               <Routes>
-                <Route path="/" element={<Navigate to={getRootRedirect()} replace />} />
-                
-                {/* Admin Dashboard ONLY for Admin */}
+                {/* Admin Only Dashboard */}
                 <Route
                   path="/dashboard"
                   element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin']}>
+                    <ProtectedRoute allowedRoles={['Admin']}>
                       <DashboardPage />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Doctor Clinical Dashboard */}
+                {/* Doctor Portal */}
                 <Route
                   path="/doctor-dashboard"
                   element={
-                    <ProtectedRoute role={role} allowedRoles={['Doctor', 'Admin']}>
+                    <ProtectedRoute allowedRoles={['Doctor', 'Admin']}>
                       <DoctorDashboardPage />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Nurse Intervention Desk */}
+                {/* Nurse Desk */}
                 <Route
                   path="/nurse-dashboard"
                   element={
-                    <ProtectedRoute role={role} allowedRoles={['Nurse', 'Admin']}>
+                    <ProtectedRoute allowedRoles={['Nurse', 'Admin']}>
                       <NurseDashboardPage />
                     </ProtectedRoute>
                   }
                 />
 
-                <Route
-                  path="/patients"
-                  element={
-                    role === 'Patient' ? (
-                      <Navigate to="/patients/P-10234" replace />
-                    ) : (
-                      <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse']}>
-                        <PatientsPage />
-                      </ProtectedRoute>
-                    )
-                  }
-                />
+                {/* General Pages */}
+                <Route path="/patients" element={<PatientsPage />} />
+                <Route path="/patients/:id" element={<PatientProfilePage />} />
+                <Route path="/appointments" element={<AppointmentsPage />} />
+                <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
+                <Route path="/risk-prediction" element={<RiskPredictionPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
 
-                <Route
-                  path="/patients/:id"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse', 'Patient']}>
-                      <PatientProfilePage />
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path="/appointments"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse', 'Patient']}>
-                      <AppointmentsPage />
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path="/appointments/:id"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse', 'Patient']}>
-                      <AppointmentDetailPage />
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path="/risk-prediction"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse']}>
-                      <RiskPredictionPage />
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path="/risk-prediction/:patientId"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse']}>
-                      <PatientProfilePage />
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path="/notifications"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse', 'Patient']}>
-                      <NotificationsPage />
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path="/reports"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor']}>
-                      <ReportsPage />
-                    </ProtectedRoute>
-                  }
-                />
-
+                {/* Security Admin Only Routes */}
                 <Route
                   path="/users"
                   element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin']}>
+                    <ProtectedRoute allowedRoles={['Admin']}>
                       <UsersRolesPage />
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/audit-logs"
                   element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin']}>
+                    <ProtectedRoute allowedRoles={['Admin']}>
                       <AuditLogsPage />
                     </ProtectedRoute>
                   }
                 />
 
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse', 'Patient']}>
-                      <SettingsPage />
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path="/help"
-                  element={
-                    <ProtectedRoute role={role} allowedRoles={['Admin', 'Doctor', 'Nurse', 'Patient']}>
-                      <HelpPage />
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route path="*" element={<Navigate to={getRootRedirect()} replace />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/help" element={<HelpPage />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </AppShell>
           }
@@ -225,5 +133,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;

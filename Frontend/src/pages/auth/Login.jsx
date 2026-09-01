@@ -28,9 +28,8 @@ export default function Login({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
-  const [isLightTheme, setIsLightTheme] = useState(false); // Theme Switcher State
+  const [isLightTheme, setIsLightTheme] = useState(false);
 
-  // Auto-rotating image slider carousel
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % CAROUSEL_SLIDES.length);
@@ -42,7 +41,12 @@ export default function Login({ onLoginSuccess }) {
     e.preventDefault();
     audioService.play2hReminder();
     onLoginSuccess({ name: email, role });
-    navigate('/dashboard');
+
+    // Navigate to role-specific portal
+    if (role === 'Admin') navigate('/dashboard');
+    else if (role === 'Doctor') navigate('/doctor-dashboard');
+    else if (role === 'Nurse') navigate('/nurse-dashboard');
+    else navigate('/patients/P-10234');
   };
 
   const currentSlide = CAROUSEL_SLIDES[activeSlide];
@@ -76,47 +80,47 @@ export default function Login({ onLoginSuccess }) {
         overflow: 'hidden',
         position: 'relative'
       }}>
-        {/* Top-Right Theme Toggle Button (Light Theme / Black Theme) */}
-        <button
-          type="button"
-          onClick={() => setIsLightTheme(!isLightTheme)}
-          style={{
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            zIndex: 10,
-            background: isLightTheme ? '#f0f2eb' : '#242038',
-            border: isLightTheme ? '1px solid #e4e6df' : '1px solid #3b3558',
-            color: isLightTheme ? '#181816' : '#ffffff',
-            padding: '8px 14px',
-            borderRadius: '30px',
-            fontWeight: 700,
-            fontSize: '0.8rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}
-        >
-          {isLightTheme ? (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-              Switch to Dark Theme
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-              </svg>
-              Switch to White Theme
-            </>
-          )}
-        </button>
+        {/* Top-Right Theme Toggle Button & Test ML Sandbox Link */}
+        <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 10, display: 'flex', gap: '8px' }}>
+          <Link
+            to="/ml-test"
+            style={{
+              background: 'linear-gradient(135deg, #059669, #047857)',
+              color: 'white',
+              padding: '8px 14px',
+              borderRadius: '30px',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
+            }}
+          >
+            🔬 Test ML Model Sandbox
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setIsLightTheme(!isLightTheme)}
+            style={{
+              background: isLightTheme ? '#f0f2eb' : '#242038',
+              border: isLightTheme ? '1px solid #e4e6df' : '1px solid #3b3558',
+              color: isLightTheme ? '#181816' : '#ffffff',
+              padding: '8px 14px',
+              borderRadius: '30px',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            {isLightTheme ? '🌙 Dark Theme' : '☀️ White Theme'}
+          </button>
+        </div>
 
         {/* Left Side Sliding Image Graphic Panel */}
         <div style={{
@@ -142,7 +146,7 @@ export default function Login({ onLoginSuccess }) {
             zIndex: 1
           }} />
 
-          {/* Top Logo & Back Button Layer */}
+          {/* Top Logo Layer */}
           <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
@@ -163,23 +167,6 @@ export default function Login({ onLoginSuccess }) {
                 CARETRACK
               </span>
             </div>
-
-            <Link
-              to="/dashboard"
-              style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                textDecoration: 'none',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)'
-              }}
-            >
-              Back to portal →
-            </Link>
           </div>
 
           {/* Bottom Hero Text Layer */}
@@ -218,7 +205,7 @@ export default function Login({ onLoginSuccess }) {
           </div>
         </div>
 
-        {/* Right Side Form Panel (Adapts to White or Black Theme) */}
+        {/* Right Side Form Panel */}
         <div style={{
           padding: '44px 40px',
           display: 'flex',
