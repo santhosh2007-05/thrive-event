@@ -86,12 +86,12 @@ export default function VehicleManagementPage() {
               <tr style={{ background: 'var(--bg-subtle)', borderBottom: '2px solid var(--border-color)' }}>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Booking Ref</th>
                 <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Patient Name</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Contact Phone</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Pickup Address</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Distance</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Calculated Fare</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Status</th>
-                <th style={{ padding: '16px 18px', fontWeight 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Admin Action</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Contact Phone</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Pickup Address</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Distance</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Calculated Fare</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Status</th>
+                <th style={{ padding: '16px 18px', fontWeight: 800, color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Admin Action</th>
               </tr>
             </thead>
             <tbody>
