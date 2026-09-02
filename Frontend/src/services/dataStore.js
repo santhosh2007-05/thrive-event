@@ -254,6 +254,7 @@ class DataStore {
       age: Number(patientData.age || 30),
       gender: patientData.gender || 'Male',
       phone: patientData.phone || '+91 7598357132',
+      password: patientData.password || '123456',
       address: patientData.address || 'Chennai Medical District',
       distanceKm: Number(patientData.distanceKm || 5),
       department: patientData.department || 'Cardiology',

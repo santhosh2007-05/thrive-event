@@ -93,23 +93,27 @@ export default function Login({ onLoginSuccess }) {
       const allPatients = dataStore.getPatients();
       const matchedPatient = allPatients.find(p =>
         p.name.toLowerCase().includes(inputUser) ||
-        p.id.toLowerCase() === inputUser ||
+        p.id.toLowerCase() === inputUser.toLowerCase() ||
         (p.phone && p.phone.includes(inputUser))
       );
 
-      const expectedPass = matchedPatient && matchedPatient.password ? matchedPatient.password : '123456';
-      const isValidPass = inputPass === expectedPass || inputPass === '123' || inputPass === '123456';
-
-      if (!isValidPass) {
-        setErrorMsg(`Invalid Patient password. Please enter your registered password.`);
+      if (!matchedPatient) {
+        setErrorMsg(`Patient account not found. Please enter your registered name, ID (e.g. P-1001), or phone number.`);
         audioService.playMissedAlert();
         return;
       }
 
-      const activePatient = matchedPatient || allPatients.find(p => p.id === 'P-1001') || allPatients[0];
+      // STRICT EXACT MATCH AGAINST REGISTERED PASSWORD (Admin or Self Registered)
+      const registeredPassword = matchedPatient.password || '123456';
+      if (inputPass !== registeredPassword) {
+        setErrorMsg(`Invalid password for patient ${matchedPatient.name}. Please enter the exact password set during registration.`);
+        audioService.playMissedAlert();
+        return;
+      }
+
       audioService.play2hReminder();
-      onLoginSuccess({ name: activePatient.name, id: activePatient.id, role: 'Patient' });
-      navigate(`/patients/${activePatient.id}`);
+      onLoginSuccess({ name: matchedPatient.name, id: matchedPatient.id, role: 'Patient' });
+      navigate(`/patients/${matchedPatient.id}`);
     }
   };
 
