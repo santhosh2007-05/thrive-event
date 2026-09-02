@@ -1,13 +1,33 @@
 // CareTrack Shared Data Store for Real-Time Cross-Panel Synchronization
-// Ensures changes in Patient panel instantly update Admin, Doctor, Nurse, Dashboard & Audit Logs!
+// Manages Patients, Appointments, Transport Shuttle Requests, and Audit Logs in localStorage!
 
 import { PATIENTS_WITH_RISK, MOCK_APPOINTMENTS, MOCK_AUDIT_LOGS } from './mockDataService';
 
 const STORAGE_KEYS = {
   PATIENTS: 'caretrack_patients_v2',
   APPOINTMENTS: 'caretrack_appointments_v2',
-  AUDIT_LOGS: 'caretrack_audit_logs_v2'
+  AUDIT_LOGS: 'caretrack_audit_logs_v2',
+  TRANSPORT: 'caretrack_transport_requests_v1'
 };
+
+const DEFAULT_TRANSPORT_REQUESTS = [
+  {
+    id: 'TRP-1001',
+    patientId: 'P-1001',
+    patientName: 'Santhosh M',
+    phone: '+91 7598357132',
+    address: 'No. 42, South Mada Street, Mylapore, Chennai',
+    distanceKm: 5.0,
+    requestedDate: '2026-09-15',
+    requestedTime: '10:30 AM',
+    status: 'Pending', // Pending | Accepted | Paid
+    fareAmount: 250,
+    driverName: 'Ramesh Kumar (Hospital Shuttle #4)',
+    driverPhone: '+91 98765 43210',
+    paymentId: null,
+    paidAt: null
+  }
+];
 
 class DataStore {
   constructor() {
@@ -24,6 +44,9 @@ class DataStore {
     }
     if (!localStorage.getItem(STORAGE_KEYS.AUDIT_LOGS)) {
       localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(MOCK_AUDIT_LOGS));
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.TRANSPORT)) {
+      localStorage.setItem(STORAGE_KEYS.TRANSPORT, JSON.stringify(DEFAULT_TRANSPORT_REQUESTS));
     }
   }
 
@@ -62,7 +85,146 @@ class DataStore {
     }
   }
 
-  // Real-time Action: Register New Patient (Unique ID Generator: P-1007, P-1008, etc.)
+  getTransportRequests() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.TRANSPORT)) || DEFAULT_TRANSPORT_REQUESTS;
+    } catch (e) {
+      return DEFAULT_TRANSPORT_REQUESTS;
+    }
+  }
+
+  // Compute multi-visit schedule array based on totalAppointments and appointmentFrequencyDays
+  generateMultiVisitSchedule(patient) {
+    const numVisits = patient.totalAppointments || 6;
+    const gapDays = patient.appointmentFrequencyDays || 30;
+    const baseDate = new Date(patient.nextFollowUpDate || '2026-09-15');
+
+    const schedule = [];
+    for (let i = 0; i < numVisits; i++) {
+      const visitDate = new Date(baseDate);
+      visitDate.setDate(baseDate.getDate() + (i * gapDays));
+      const dateStr = visitDate.toISOString().split('T')[0];
+
+      schedule.push({
+        visitNumber: i + 1,
+        date: dateStr,
+        time: patient.nextFollowUpTime || '10:30 AM',
+        department: patient.department || 'Cardiology',
+        doctor: patient.assignedDoctor || 'Dr. Sundaramurthy Iyer',
+        status: i === 0 ? (patient.status || 'Upcoming') : 'Scheduled'
+      });
+    }
+
+    return schedule;
+  }
+
+  // Home Transport Request Actions
+  requestTransportShuttle(patientId, address, notes = '') {
+    const patients = this.getPatients();
+    const requests = this.getTransportRequests();
+    const patient = patients.find(p => p.id === patientId) || patients[0];
+
+    const dist = patient.distanceKm || 5;
+    const calculatedFare = Math.max(100, Math.round(dist * 50)); // ₹50/km, min ₹100
+
+    const newRequest = {
+      id: `TRP-${Date.now()}`,
+      patientId: patient.id,
+      patientName: patient.name,
+      phone: patient.phone,
+      address: address || patient.address || 'Chennai Outpatient District',
+      distanceKm: dist,
+      requestedDate: patient.nextFollowUpDate || '2026-09-15',
+      requestedTime: patient.nextFollowUpTime || '10:30 AM',
+      status: 'Pending',
+      fareAmount: calculatedFare,
+      driverName: 'Assigned Hospital Shuttle Driver',
+      driverPhone: '+91 7598357132',
+      notes: notes,
+      paymentId: null,
+      paidAt: null
+    };
+
+    const updated = [newRequest, ...requests];
+    localStorage.setItem(STORAGE_KEYS.TRANSPORT, JSON.stringify(updated));
+    this.notify();
+    return newRequest;
+  }
+
+  approveTransportShuttle(requestId, fareAmount = 250, driverDetails = 'Ramesh Kumar (Hospital Shuttle #4)') {
+    const requests = this.getTransportRequests();
+    const logs = this.getAuditLogs();
+
+    const updated = requests.map(req => {
+      if (req.id === requestId) {
+        return {
+          ...req,
+          status: 'Accepted',
+          fareAmount: Number(fareAmount),
+          driverName: driverDetails
+        };
+      }
+      return req;
+    });
+
+    const newLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: new Date().toLocaleString(),
+      user: 'Admin Staff',
+      role: 'Admin',
+      action: 'Accepted Transport Shuttle Request',
+      patientId: requests.find(r => r.id === requestId)?.patientId || 'P-1001',
+      appointmentId: requestId,
+      previousValue: 'Pending',
+      newValue: `Accepted (Fare: ₹${fareAmount})`,
+      reason: 'Assigned hospital shuttle vehicle & confirmed pickup',
+      ipAddress: '192.168.1.10'
+    };
+
+    localStorage.setItem(STORAGE_KEYS.TRANSPORT, JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify([newLog, ...logs]));
+    this.notify();
+    return updated;
+  }
+
+  payTransportShuttle(requestId, paymentDetails = {}) {
+    const requests = this.getTransportRequests();
+    const logs = this.getAuditLogs();
+
+    const updated = requests.map(req => {
+      if (req.id === requestId) {
+        return {
+          ...req,
+          status: 'Paid',
+          paymentId: paymentDetails.paymentId || `pay_RZP_${Date.now()}`,
+          paidAt: new Date().toLocaleString()
+        };
+      }
+      return req;
+    });
+
+    const targetReq = requests.find(r => r.id === requestId);
+    const newLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: new Date().toLocaleString(),
+      user: targetReq?.patientName || 'Patient',
+      role: 'Patient',
+      action: 'Paid Transport Fare via Razorpay Demo',
+      patientId: targetReq?.patientId || 'P-1001',
+      appointmentId: requestId,
+      previousValue: 'Accepted',
+      newValue: 'Paid & Confirmed',
+      reason: `Razorpay payment successful (${paymentDetails.paymentId || 'pay_RZP'})`,
+      ipAddress: '192.168.1.45'
+    };
+
+    localStorage.setItem(STORAGE_KEYS.TRANSPORT, JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify([newLog, ...logs]));
+    this.notify();
+    return updated;
+  }
+
+  // Real-time Action: Register New Patient
   registerNewPatient(patientData, actorName = 'Admin', role = 'Admin') {
     const patients = this.getPatients();
     const appointments = this.getAppointments();
@@ -70,7 +232,7 @@ class DataStore {
 
     const nextNumber = 1001 + patients.length;
     const newId = `P-${nextNumber}`;
-    const numVisits = Number(patientData.totalAppointments || 1);
+    const numVisits = Number(patientData.totalAppointments || 6);
     const freqDays = Number(patientData.appointmentFrequencyDays || 30);
 
     const newPatientRisk = {
@@ -105,7 +267,7 @@ class DataStore {
       missedAppointmentsCount: 0,
       totalAppointments: numVisits,
       appointmentFrequencyDays: freqDays,
-      treatmentDurationMonths: 1,
+      treatmentDurationMonths: Math.ceil((numVisits * freqDays) / 30),
       risk: newPatientRisk,
       history: [
         {
@@ -149,7 +311,7 @@ class DataStore {
       appointmentId: newAptObj.id,
       previousValue: 'Unregistered',
       newValue: `Registered (${newPatientObj.name})`,
-      reason: 'First time intake appointment registration',
+      reason: `Intake registered with ${numVisits} visits every ${freqDays} days`,
       ipAddress: '192.168.1.10'
     };
 

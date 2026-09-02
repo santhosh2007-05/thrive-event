@@ -8,15 +8,131 @@ import smsService, { FORMATTED_PHONE_NUMBER } from '../services/smsService';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [patients, setPatients] = useState(dataStore.getPatients());
+  const [transportRequests, setTransportRequests] = useState(dataStore.getTransportRequests());
 
   useEffect(() => {
     const unsubscribe = dataStore.subscribe(() => {
       setPatients(dataStore.getPatients());
+      setTransportRequests(dataStore.getTransportRequests());
     });
     return () => unsubscribe();
   }, []);
 
   const highRiskPatients = patients.filter(p => p.risk && p.risk.riskScore >= 40);
+
+  const handleApproveTransport = (reqId) => {
+    dataStore.approveTransportShuttle(reqId, 250, 'Ramesh Kumar (Hospital Shuttle #4)');
+    alert('Shuttle Request Accepted! Travel fare set to ₹250. Patient can now pay via Razorpay Demo.');
+  };
+
+  const handleExportAdminPdfReport = () => {
+    const reportHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>CareTrack Executive Hospital Operations Report</title>
+        <style>
+          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 40px; color: #0f172a; line-height: 1.5; }
+          .header { display: flex; justify-content: space-between; border-bottom: 3px solid #0284c7; padding-bottom: 16px; margin-bottom: 24px; }
+          .title { font-size: 24px; font-weight: bold; color: #0284c7; }
+          .kpi-row { display: flex; gap: 16px; margin-bottom: 24px; }
+          .kpi-box { flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; background: #f8fafc; text-align: center; }
+          .kpi-val { font-size: 22px; font-weight: bold; margin-top: 4px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+          th { background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; font-size: 12px; }
+          td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+          .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+          .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #64748b; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="title">CareTrack Operations Command Center</div>
+            <div>Executive Outpatient Risk & Transport Analytics Report</div>
+          </div>
+          <div style="text-align: right; font-size: 13px; color: #475569;">
+            Date: <strong>${new Date().toLocaleDateString()}</strong><br/>
+            Region: <strong>Chennai, India</strong>
+          </div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-box"><div>Total Scheduled Visits</div><div class="kpi-val" style="color:#0284c7;">2,481</div></div>
+          <div class="kpi-box"><div>Low Risk Visits</div><div class="kpi-val" style="color:#059669;">1,904</div></div>
+          <div class="kpi-box"><div>Medium Risk Visits</div><div class="kpi-val" style="color:#d97706;">421</div></div>
+          <div class="kpi-box"><div>High Risk Visits</div><div class="kpi-val" style="color:#e11d48;">156</div></div>
+        </div>
+
+        <h3>High Risk Priority Patient Follow-Up Queue</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Patient ID</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Risk Score</th>
+              <th>Follow-up Date</th>
+              <th>Assigned Doctor</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${patients.map(p => `
+              <tr>
+                <td><strong>${p.id}</strong></td>
+                <td>${p.name}</td>
+                <td>${p.department}</td>
+                <td style="font-weight:bold; color:${p.risk?.riskScore >= 70 ? '#e11d48' : '#d97706'}">${p.risk?.riskScore || 12}%</td>
+                <td>${p.nextFollowUpDate}</td>
+                <td>${p.assignedDoctor}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Hospital Transport Shuttle Bookings</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Patient</th>
+              <th>Pickup Address</th>
+              <th>Distance</th>
+              <th>Fare</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${transportRequests.map(tr => `
+              <tr>
+                <td><strong>${tr.id}</strong></td>
+                <td>${tr.patientName} (${tr.phone})</td>
+                <td>${tr.address}</td>
+                <td>${tr.distanceKm} km</td>
+                <td>₹${tr.fareAmount}</td>
+                <td><strong>${tr.status}</strong></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          CareTrack Health Outpatient Intelligence • Generated Automatically • Support: +91 7598357132
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWin = window.open('', '_blank', 'width=900,height=1000');
+    if (printWin) {
+      printWin.document.write(reportHtml);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => {
+        printWin.print();
+      }, 500);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -58,8 +174,8 @@ export default function DashboardPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button className="btn-primary" onClick={() => navigate('/risk-prediction')}>
-              ML Risk Engine &rarr;
+            <button className="btn-primary" onClick={handleExportAdminPdfReport} style={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)' }}>
+              Export Executive PDF Report &rarr;
             </button>
             <button className="btn-secondary" style={{ background: '#ffffff', color: '#0f172a' }} onClick={() => navigate('/patients')}>
               Patients Directory
@@ -104,6 +220,77 @@ export default function DashboardPage() {
             <span style={{ color: 'var(--text-muted)' }}>Immediate intervention queue</span>
             <span style={{ color: '#e11d48', fontWeight: 800 }}>▲ 12.4% vs last wk</span>
           </div>
+        </div>
+      </div>
+
+      {/* 🚗 OUTPATIENT TRANSPORT SHUTTLE REQUESTS MANAGEMENT WIDGET */}
+      <div className="full-width-card">
+        <div className="card-header-row" style={{ marginBottom: '16px' }}>
+          <div className="card-section-title">
+            Outpatient Transport Shuttle Requests (Home Pickup)
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--primary-accent)', fontWeight: 700 }}>Real-Time Approval Desk</span>
+        </div>
+
+        <div className="table-responsive">
+          <table className="admin-data-table" style={{ width: '100%', fontSize: '0.85rem' }}>
+            <thead>
+              <tr>
+                <th>Booking Ref</th>
+                <th>Patient Name</th>
+                <th>Contact Phone</th>
+                <th>Pickup Address</th>
+                <th>Distance</th>
+                <th>Calculated Fare</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'center' }}>Admin Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transportRequests.length > 0 ? (
+                transportRequests.map(req => (
+                  <tr key={req.id}>
+                    <td style={{ fontWeight: 700, color: 'var(--primary-accent)' }}>{req.id}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{req.patientName} ({req.patientId})</td>
+                    <td>{req.phone}</td>
+                    <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{req.address}</td>
+                    <td>{req.distanceKm} km</td>
+                    <td style={{ fontWeight: 800, color: '#059669' }}>₹{req.fareAmount}</td>
+                    <td>
+                      <span className={`status-badge ${req.status === 'Paid' ? 'active' : req.status === 'Accepted' ? 'reschedule_requested' : 'inactive'}`}>
+                        {req.status}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {req.status === 'Pending' ? (
+                        <button
+                          className="btn-primary"
+                          style={{ padding: '6px 14px', fontSize: '0.78rem', background: 'linear-gradient(135deg, #0284c7, #0369a1)' }}
+                          onClick={() => handleApproveTransport(req.id)}
+                        >
+                          Accept & Assign Shuttle (₹{req.fareAmount})
+                        </button>
+                      ) : req.status === 'Accepted' ? (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--info-color)', fontWeight: 700 }}>
+                          Accepted (Awaiting Patient Razorpay Payment)
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 800 }}>
+                          ✓ Paid (Driver: {req.driverName})
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                    No transport pickup requests pending.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 

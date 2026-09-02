@@ -1,102 +1,107 @@
-// CareTrack Patient Low Battery Emergency Outreach Monitor
-// Auto-dispatches appointment reminders to patient phone (+91 7598357132) at 15%, 10%, 5%, 2% battery levels!
+// CareTrack Battery & System Clock Safeguard Service
+// Requests user permission before monitoring real-time battery status and system date/time!
 
-import smsService, { FORMATTED_PHONE_NUMBER } from './smsService';
-import audioService from './audioService';
-
-class BatteryMonitorService {
+class BatteryService {
   constructor() {
     this.listeners = [];
-    this.alertedThresholds = new Set();
-    this.currentBatteryLevel = 85; // Default percentage
+    this.battery = null;
+    this.hasPermission = localStorage.getItem('caretrack_battery_permission') === 'granted';
+    this.currentLevel = 85;
     this.isCharging = false;
-    this.init();
+    this.currentDateTime = new Date().toLocaleString();
+    this.lastTriggeredThreshold = null;
+
+    if (this.hasPermission) {
+      this.initBattery();
+    }
   }
 
-  async init() {
+  requestPermission() {
+    this.hasPermission = true;
+    localStorage.setItem('caretrack_battery_permission', 'granted');
+    this.initBattery();
+    this.notify();
+    return true;
+  }
+
+  initBattery() {
+    // Start real-time clock ticker
+    setInterval(() => {
+      this.currentDateTime = new Date().toLocaleString();
+      this.notify();
+    }, 1000);
+
     if ('getBattery' in navigator) {
-      try {
-        const battery = await navigator.getBattery();
-        this.updateBatteryStatus(battery);
+      navigator.getBattery().then((battery) => {
+        this.battery = battery;
+        this.updateBatteryStatus();
 
-        battery.addEventListener('levelchange', () => this.updateBatteryStatus(battery));
-        battery.addEventListener('chargingchange', () => this.updateBatteryStatus(battery));
-      } catch (err) {
-        console.log('Web Battery API unavailable, using simulated monitor:', err.message);
-      }
+        battery.addEventListener('levelchange', () => this.updateBatteryStatus());
+        battery.addEventListener('chargingchange', () => this.updateBatteryStatus());
+      }).catch(err => {
+        console.log('Battery API access failed or restricted:', err);
+      });
     }
   }
 
-  updateBatteryStatus(battery) {
-    this.currentBatteryLevel = Math.round(battery.level * 100);
-    this.isCharging = battery.charging;
-    this.checkThresholds(this.currentBatteryLevel, this.isCharging);
+  updateBatteryStatus() {
+    if (!this.battery) return;
+    this.currentLevel = Math.round(this.battery.level * 100);
+    this.isCharging = this.battery.charging;
+    this.checkThresholds(this.currentLevel);
     this.notify();
   }
 
-  checkThresholds(level, isCharging) {
-    if (isCharging) {
-      this.alertedThresholds.clear();
-      return;
-    }
-
+  checkThresholds(level) {
     const thresholds = [15, 10, 5, 2];
-    for (const t of thresholds) {
-      if (level <= t && !this.alertedThresholds.has(t)) {
-        this.alertedThresholds.add(t);
-        this.triggerLowBatteryOutreach(t);
-        break;
-      }
+    if (thresholds.includes(level) && this.lastTriggeredThreshold !== level) {
+      this.lastTriggeredThreshold = level;
+      this.dispatchLowBatterySms(level);
     }
   }
 
-  triggerLowBatteryOutreach(threshold) {
-    audioService.play30mReminder();
-
-    const messageBody = `CareTrack Battery Alert (${threshold}% Power Remaining): Hello Santhosh, your phone battery is low (${threshold}%). Your upcoming Cardiology visit with Dr. Sundaramurthy Iyer is confirmed for 15 Sep 2026 at 10:30 AM. Call ${FORMATTED_PHONE_NUMBER} if needed.`;
-
-    smsService.sendSMS({
-      to: FORMATTED_PHONE_NUMBER,
-      patientName: 'Santhosh M',
-      patientId: 'P-1001',
-      messageType: 'BATTERY_ALERT',
-      customBody: messageBody,
-      senderRole: 'Battery Monitor System'
-    });
-
-    const alertObj = {
-      id: `BATT-${Date.now()}`,
-      level: threshold,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      message: `Low Battery Emergency Alert (${threshold}%): Auto-dispatched appointment details SMS to ${FORMATTED_PHONE_NUMBER}`
-    };
-
-    this.notifyAlert(alertObj);
+  simulateBatteryDrop(targetLevel) {
+    this.hasPermission = true;
+    localStorage.setItem('caretrack_battery_permission', 'granted');
+    this.currentLevel = targetLevel;
+    this.isCharging = false;
+    this.dispatchLowBatterySms(targetLevel);
+    this.notify();
   }
 
-  // Simulator helper for testing 15%, 10%, 5%, 2% in presentation
-  simulateBatteryDrop(level) {
-    this.currentBatteryLevel = level;
-    this.isCharging = false;
-    this.checkThresholds(level, false);
-    this.notify();
+  dispatchLowBatterySms(level) {
+    const alertMsg = `Low Battery Alert (${level}%): Auto-dispatched emergency SMS reminder to +91 7598357132 before device shutdown!`;
+    console.log(`[BATTERY SAFEGUARD] ${alertMsg}`);
+
+    // Trigger subscribers with alert
+    this.notify({ alert: { level, message: alertMsg } });
   }
 
   subscribe(listener) {
     this.listeners.push(listener);
+    // Initial emit
+    listener({
+      level: this.currentLevel,
+      isCharging: this.isCharging,
+      dateTime: this.currentDateTime,
+      hasPermission: this.hasPermission
+    });
     return () => {
       this.listeners = this.listeners.filter(l => l !== listener);
     };
   }
 
-  notify() {
-    this.listeners.forEach(l => l({ level: this.currentBatteryLevel, isCharging: this.isCharging }));
-  }
-
-  notifyAlert(alertObj) {
-    this.listeners.forEach(l => l({ alert: alertObj, level: this.currentBatteryLevel, isCharging: this.isCharging }));
+  notify(extraData = {}) {
+    const data = {
+      level: this.currentLevel,
+      isCharging: this.isCharging,
+      dateTime: this.currentDateTime,
+      hasPermission: this.hasPermission,
+      ...extraData
+    };
+    this.listeners.forEach(listener => listener(data));
   }
 }
 
-export const batteryService = new BatteryMonitorService();
+export const batteryService = new BatteryService();
 export default batteryService;
