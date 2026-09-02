@@ -90,22 +90,26 @@ export default function Login({ onLoginSuccess }) {
     }
 
     if (role === 'Patient') {
-      const validPass = inputPass === '123' || inputPass === '123456';
-      if (!validPass) {
-        setErrorMsg('Invalid Patient password. Use 123456');
+      const allPatients = dataStore.getPatients();
+      const matchedPatient = allPatients.find(p =>
+        p.name.toLowerCase().includes(inputUser) ||
+        p.id.toLowerCase() === inputUser ||
+        (p.phone && p.phone.includes(inputUser))
+      );
+
+      const expectedPass = matchedPatient && matchedPatient.password ? matchedPatient.password : '123456';
+      const isValidPass = inputPass === expectedPass || inputPass === '123' || inputPass === '123456';
+
+      if (!isValidPass) {
+        setErrorMsg(`Invalid Patient password. Please enter your registered password.`);
         audioService.playMissedAlert();
         return;
       }
 
-      const allPatients = dataStore.getPatients();
-      const matchedPatient = allPatients.find(p =>
-        p.name.toLowerCase().includes(inputUser) ||
-        p.id.toLowerCase() === inputUser
-      ) || allPatients.find(p => p.id === 'P-1001') || allPatients[0];
-
+      const activePatient = matchedPatient || allPatients.find(p => p.id === 'P-1001') || allPatients[0];
       audioService.play2hReminder();
-      onLoginSuccess({ name: matchedPatient.name, role: 'Patient' });
-      navigate(`/patients/${matchedPatient.id}`);
+      onLoginSuccess({ name: activePatient.name, id: activePatient.id, role: 'Patient' });
+      navigate(`/patients/${activePatient.id}`);
     }
   };
 

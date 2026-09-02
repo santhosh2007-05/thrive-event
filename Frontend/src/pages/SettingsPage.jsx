@@ -35,15 +35,15 @@ export default function SettingsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {toastMsg && (
-        <div style={{ background: '#0d9488', color: 'white', padding: '12px 20px', borderRadius: '10px', fontWeight: 600 }}>
+        <div style={{ background: '#059669', color: 'white', padding: '12px 20px', borderRadius: '10px', fontWeight: 600 }}>
           ✓ {toastMsg}
         </div>
       )}
 
       {/* Header */}
       <div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>System Preferences & Settings</h2>
-        <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Configure audio alerts, notification preferences, sound volume, and accessibility modes</span>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>System Preferences & Settings</h2>
+        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Configure audio alerts, notification preferences, sound volume, and accessibility modes</span>
       </div>
 
       <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -53,14 +53,14 @@ export default function SettingsPage() {
             <div className="card-section-title">
               Operations Sound & Audio Alert System
             </div>
-            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Web Audio API Synthetic Chime Engine</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Web Audio API Synthetic Chime Engine</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>Sound Notifications</strong>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Play operational chime tones for 24h, 2h, 30m, 10m, and missed alerts</p>
+                <strong style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>Sound Notifications</strong>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Play operational chime tones for 24h, 2h, 30m, 10m, and missed alerts</p>
               </div>
               <input
                 type="checkbox"
@@ -71,7 +71,7 @@ export default function SettingsPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>
                 <span>Alert Sound Volume</span>
                 <span>{volume}%</span>
               </div>
@@ -104,36 +104,36 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '12px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-              <input type="checkbox" checked={highRiskAlerts} onChange={(e) => setHighRiskAlerts(e.target.checked)} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '12px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', padding: '14px 16px', borderRadius: '12px' }}>
+              <input type="checkbox" checked={highRiskAlerts} onChange={(e) => setHighRiskAlerts(e.target.checked)} style={{ width: '18px', height: '18px' }} />
               <div>
-                <strong>High-Risk Patient Flags</strong>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Notify staff when risk score exceeds 70%</div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>High-Risk Patient Flags</strong>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Notify staff when risk score exceeds 70%</div>
               </div>
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-              <input type="checkbox" checked={missedAlerts} onChange={(e) => setMissedAlerts(e.target.checked)} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', padding: '14px 16px', borderRadius: '12px' }}>
+              <input type="checkbox" checked={missedAlerts} onChange={(e) => setMissedAlerts(e.target.checked)} style={{ width: '18px', height: '18px' }} />
               <div>
-                <strong>Missed Follow-Up Alerts</strong>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Trigger immediate alert when visit deadline passes</div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>Missed Follow-Up Alerts</strong>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Trigger immediate alert when visit deadline passes</div>
               </div>
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-              <input type="checkbox" checked={smsNotif} onChange={(e) => setSmsNotif(e.target.checked)} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', padding: '14px 16px', borderRadius: '12px' }}>
+              <input type="checkbox" checked={smsNotif} onChange={(e) => setSmsNotif(e.target.checked)} style={{ width: '18px', height: '18px' }} />
               <div>
-                <strong>SMS Patient Reminders</strong>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Automated SMS dispatch 24 hours prior</div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>SMS Patient Reminders</strong>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Automated SMS dispatch 24 hours prior</div>
               </div>
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-              <input type="checkbox" checked={emailNotif} onChange={(e) => setEmailNotif(e.target.checked)} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', padding: '14px 16px', borderRadius: '12px' }}>
+              <input type="checkbox" checked={emailNotif} onChange={(e) => setEmailNotif(e.target.checked)} style={{ width: '18px', height: '18px' }} />
               <div>
-                <strong>Email Summaries</strong>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Daily operations recap emails</div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>Email Summaries</strong>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Daily operations recap emails</div>
               </div>
             </label>
           </div>
@@ -147,20 +147,20 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '12px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-              <input type="checkbox" checked={largeText} onChange={(e) => setLargeText(e.target.checked)} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '12px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', padding: '14px 16px', borderRadius: '12px' }}>
+              <input type="checkbox" checked={largeText} onChange={(e) => setLargeText(e.target.checked)} style={{ width: '18px', height: '18px' }} />
               <div>
-                <strong>Large Text Mode (18px+)</strong>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Increases font readability for elderly users</div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>Large Text Mode (18px+)</strong>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Increases font readability for elderly users</div>
               </div>
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-              <input type="checkbox" checked={highContrast} onChange={(e) => setHighContrast(e.target.checked)} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', padding: '14px 16px', borderRadius: '12px' }}>
+              <input type="checkbox" checked={highContrast} onChange={(e) => setHighContrast(e.target.checked)} style={{ width: '18px', height: '18px' }} />
               <div>
-                <strong>High Contrast Theme</strong>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Enhances contrast for visually impaired staff</div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>High Contrast Theme</strong>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Enhances contrast for visually impaired staff</div>
               </div>
             </label>
           </div>

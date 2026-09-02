@@ -7,6 +7,7 @@ export default function Sidebar({ role }) {
       return [
         { label: 'Admin Command Center', path: '/dashboard' },
         { label: 'Patients Management', path: '/patients' },
+        { label: 'Vehicle Management', path: '/vehicle-management' },
         { label: 'Risk Predictions Engine', path: '/risk-prediction' },
         { label: 'Appointments Calendar', path: '/appointments' },
         { label: 'Notifications Center', path: '/notifications' },
@@ -22,6 +23,7 @@ export default function Sidebar({ role }) {
       return [
         { label: '360° Doctor Portal', path: '/doctor-dashboard' },
         { label: 'My Patients Caseload', path: '/patients' },
+        { label: 'Vehicle Transport Desk', path: '/vehicle-management' },
         { label: 'Risk Predictions', path: '/risk-prediction' },
         { label: 'Appointments Schedule', path: '/appointments' },
         { label: 'Clinical Reports', path: '/reports' },
@@ -34,6 +36,7 @@ export default function Sidebar({ role }) {
       return [
         { label: 'Nurse Intervention Desk', path: '/nurse-dashboard' },
         { label: 'Patients List', path: '/patients' },
+        { label: 'Vehicle Transport Desk', path: '/vehicle-management' },
         { label: 'Follow-up Risk Alerts', path: '/risk-prediction' },
         { label: 'Appointments Calendar', path: '/appointments' },
         { label: 'Outreach Notifications', path: '/notifications' },
@@ -42,9 +45,10 @@ export default function Sidebar({ role }) {
       ];
     }
 
-    // Patient Role (Defaults to Santhosh M P-10238)
+    // Patient Role
     return [
-      { label: 'My Patient Portal', path: '/patients/P-10238' },
+      { label: 'My Patient Portal', path: '/patients/P-1001' },
+      { label: 'Hospital Services & Vehicle', path: '/services' },
       { label: 'My Appointments', path: '/appointments' },
       { label: 'My Notifications', path: '/notifications' },
       { label: 'Accessibility Settings', path: '/settings' },
@@ -53,10 +57,6 @@ export default function Sidebar({ role }) {
   };
 
   const navItems = getNavItems();
-
-  const handleLogout = () => {
-    window.location.href = '/login';
-  };
 
   return (
     <aside style={{
@@ -78,50 +78,56 @@ export default function Sidebar({ role }) {
       transition: 'background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease'
     }}>
       {/* Brand Header */}
-      <div style={{ paddingBottom: '20px', borderBottom: '1px solid var(--border-color)', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '10px',
-            background: 'var(--bg-highlight)',
-            color: 'var(--primary-accent)',
-            border: '1px solid var(--border-focus)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 800,
-            fontSize: '0.9rem'
-          }}>
-            CT
-          </div>
-          <div>
-            <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-main)', letterSpacing: '-0.3px', display: 'block' }}>
-              CareTrack
-            </span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--primary-accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {role} Portal
-            </span>
-          </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', padding: '0 8px' }}>
+        <div style={{
+          width: '38px',
+          height: '38px',
+          borderRadius: '10px',
+          background: 'linear-gradient(135deg, #059669, #047857)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontWeight: '900',
+          fontSize: '1.2rem',
+          boxShadow: '0 4px 12px rgba(5, 150, 105, 0.4)'
+        }}>
+          C
+        </div>
+        <div>
+          <div style={{ fontWeight: 800, fontSize: '1.05rem', letterSpacing: '-0.3px' }}>CareTrack</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Hospital Follow-up AI</div>
         </div>
       </div>
 
-      {/* Navigation List */}
+      {/* Role Badge */}
+      <div style={{
+        background: 'var(--bg-subtle)',
+        border: '1px solid var(--border-color)',
+        padding: '8px 12px',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        fontSize: '0.75rem'
+      }}>
+        <span style={{ color: 'var(--text-muted)' }}>Logged in as:</span><br />
+        <strong style={{ color: 'var(--primary-accent)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{role} Role</strong>
+      </div>
+
+      {/* Navigation Items */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             style={({ isActive }) => ({
-              display: 'flex',
-              alignItems: 'center',
+              display: 'block',
               padding: '10px 14px',
-              borderRadius: '12px',
-              color: isActive ? 'var(--primary-accent)' : 'var(--text-muted)',
+              borderRadius: '8px',
+              color: isActive ? 'var(--primary-accent)' : 'var(--text-main)',
               background: isActive ? 'var(--bg-highlight)' : 'transparent',
-              border: isActive ? '1px solid var(--border-focus)' : '1px solid transparent',
               textDecoration: 'none',
-              fontSize: '0.875rem',
+              fontSize: '0.85rem',
               fontWeight: isActive ? 700 : 500,
               transition: 'all 0.15s ease'
             })}
@@ -131,39 +137,10 @@ export default function Sidebar({ role }) {
         ))}
       </nav>
 
-      {/* Sidebar Footer */}
-      <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <button
-          onClick={handleLogout}
-          style={{
-            width: '100%',
-            background: 'linear-gradient(135deg, #e11d48, #be123c)',
-            color: '#ffffff',
-            border: 'none',
-            padding: '10px 16px',
-            borderRadius: '30px',
-            fontWeight: 700,
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 12px rgba(225, 29, 72, 0.25)',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          Sign Out
-        </button>
-
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-          Active Role: <strong style={{ color: 'var(--text-main)' }}>{role}</strong>
-        </div>
+      {/* Version Footer */}
+      <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border-color)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+        CareTrack Hospital OS v2.4<br />
+        Connected to Spring Boot API
       </div>
     </aside>
   );

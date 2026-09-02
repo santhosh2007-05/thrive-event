@@ -19,6 +19,8 @@ import UsersRolesPage from './pages/UsersRolesPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
+import ServicesPage from './pages/ServicesPage';
+import VehicleManagementPage from './pages/VehicleManagementPage';
 
 export default function App() {
   const [role, setRole] = useState('Admin');
@@ -98,6 +100,8 @@ export default function App() {
                 {/* General Pages */}
                 <Route path="/patients" element={<PatientsPage />} />
                 <Route path="/patients/:id" element={<PatientProfilePage />} />
+                <Route path="/services" element={<ServicesPage />} />
+                <Route path="/vehicle-management" element={<VehicleManagementPage />} />
                 <Route path="/appointments" element={<AppointmentsPage />} />
                 <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
                 <Route path="/risk-prediction" element={<RiskPredictionPage />} />

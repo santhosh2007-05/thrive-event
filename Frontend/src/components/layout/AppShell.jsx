@@ -13,7 +13,8 @@ export const useRole = () => useContext(RoleContext);
 export default function AppShell({ children, role, onRoleChange, user, onLogout }) {
   const [showNotificationsDrawer, setShowNotificationsDrawer] = useState(false);
   const [notificationsList, setNotificationsList] = useState(MOCK_NOTIFICATIONS);
-  const [darkMode, setDarkMode] = useState(false);
+  // Default theme is DARK MODE by default!
+  const [darkMode, setDarkMode] = useState(true);
   const [accessibilityMode, setAccessibilityMode] = useState({
     largeText: false,
     highContrast: false
@@ -176,7 +177,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
                   <div>
@@ -257,7 +258,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
                   Trigger Cardiac SOS Alarm (10 Taps)
@@ -314,7 +315,7 @@ export default function AppShell({ children, role, onRoleChange, user, onLogout 
               }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
               </div>
